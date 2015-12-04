@@ -52,7 +52,7 @@ dependencies {
 
   provided 'com.segment.analytics.android:analytics:4.0.0'
 
-  compile 'com.appboy:android-sdk-ui:1.10+'
+  compile 'com.appboy:android-sdk-ui:1.11.0'
 
   testCompile 'junit:junit:4.12'
   testCompile('org.robolectric:robolectric:3.0') {
