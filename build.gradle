@@ -46,7 +46,6 @@ checkstyle {
 dependencies {
   repositories {
     mavenCentral()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
     maven { url "http://appboy.github.io/appboy-android-sdk/sdk" }
   }
 
