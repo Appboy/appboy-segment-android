@@ -7,7 +7,7 @@ import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
 import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
-import com.appboy.ui.support.StringUtils;
+import com.appboy.support.StringUtils;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
