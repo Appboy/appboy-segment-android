@@ -1,8 +1,8 @@
 analytics-android-integration-appboy
 ======================================
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/appboy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/appboy)
-[![Javadocs](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/appboy.svg?label=javadoc)](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/appboy)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.appboy/appboy-segment-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.appboy/appboy-segment-integration)
+[![Javadocs](http://javadoc-badge.appspot.com/com.appboy/appboy-segment-integration.svg?label=javadoc)](http://javadoc-badge.appspot.com/com.appboy/appboy-segment-integration)
 
 Appboy integration for [analytics-android](https://github.com/segmentio/analytics-android).
 
