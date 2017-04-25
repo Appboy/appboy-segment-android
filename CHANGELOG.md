@@ -1,3 +1,7 @@
+## 2.0.0
+* Uses analytics-android 4.2.6 and Appboy 2.0.0
+* Adds support for custom attribute values with date types.
+
 ## 1.1.0
 * Uses analytics-android 4.2.0 and Appboy 1.15.1
 

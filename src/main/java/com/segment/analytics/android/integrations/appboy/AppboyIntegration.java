@@ -3,11 +3,13 @@ package com.segment.analytics.android.integrations.appboy;
 import android.app.Activity;
 
 import com.appboy.Appboy;
+import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
+import com.appboy.enums.SdkFlavor;
 import com.appboy.models.outgoing.AppboyProperties;
-import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
 import com.appboy.support.StringUtils;
+import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
@@ -45,11 +47,16 @@ public class AppboyIntegration extends Integration<Appboy> {
     public Integration<?> create(ValueMap settings, Analytics analytics) {
       Logger logger = analytics.logger(APPBOY_KEY);
       String apiKey = settings.getString(API_KEY_KEY);
+      SdkFlavor flavor = SdkFlavor.SEGMENT;
       if (StringUtils.isNullOrBlank(API_KEY_KEY)) {
         logger.info("Appboy+Segment integration attempted to initialize without api key.");
         return null;
       }
-      Appboy.configure(analytics.getApplication().getApplicationContext(), apiKey);
+      AppboyConfig config = new AppboyConfig.Builder()
+              .setApiKey(apiKey)
+              .setSdkFlavor(flavor)
+              .build();
+      Appboy.configure(analytics.getApplication().getApplicationContext(), config);
       Appboy appboy = Appboy.getInstance(analytics.getApplication());
       logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
       return new AppboyIntegration(appboy, apiKey, logger);
@@ -155,6 +162,9 @@ public class AppboyIntegration extends Integration<Appboy> {
           mAppboy.getCurrentUser().setCustomUserAttribute(key, (Float) value);
         } else if (value instanceof Long) {
           mAppboy.getCurrentUser().setCustomUserAttribute(key, (Long) value);
+        } else if (value instanceof Date) {
+          long secondsFromEpoch = ((Date) value).getTime() / 1000L;
+          mAppboy.getCurrentUser().setCustomUserAttributeToSecondsFromEpoch(key, secondsFromEpoch);
         } else if (value instanceof String) {
           mAppboy.getCurrentUser().setCustomUserAttribute(key, (String) value);
         } else {
