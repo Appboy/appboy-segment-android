@@ -1,3 +1,7 @@
+## 2.0.1
+* Uses analytics-android 4.2.6 and Appboy 2.0.4
+* Fixes an issue where install attribution data was being sent up as an event.
+
 ## 2.0.0
 * Uses analytics-android 4.2.6 and Appboy 2.0.0
 * Adds support for custom attribute values with date types.

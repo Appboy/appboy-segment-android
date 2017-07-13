@@ -11,7 +11,7 @@ buildscript {
 }
 
 group = 'com.appboy'
-version = '2.0.0'
+version = '2.0.1'
 
 apply plugin: 'com.android.library'
 apply plugin: 'checkstyle'
@@ -51,7 +51,7 @@ dependencies {
 
   provided 'com.segment.analytics.android:analytics:4.2.6'
 
-  compile 'com.appboy:android-sdk-ui:2.0.0'
+  compile 'com.appboy:android-sdk-ui:2.0.4'
 
   testCompile 'junit:junit:4.12'
   testCompile('org.robolectric:robolectric:3.0') {

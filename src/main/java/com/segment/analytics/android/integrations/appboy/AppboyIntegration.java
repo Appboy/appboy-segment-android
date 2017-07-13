@@ -8,6 +8,7 @@ import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
 import com.appboy.enums.SdkFlavor;
 import com.appboy.models.outgoing.AppboyProperties;
+import com.appboy.models.outgoing.AttributionData;
 import com.appboy.support.StringUtils;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
 import com.segment.analytics.Analytics;
@@ -190,6 +191,15 @@ public class AppboyIntegration extends Integration<Appboy> {
       return;
     }
     Properties properties = track.properties();
+    if (event.equals("Install Attributed")) {
+      Properties campaignProps = (Properties) properties.get("campaign");
+      mAppboy.getCurrentUser().setAttributionData(new AttributionData(
+          campaignProps.getString("source"),
+          campaignProps.getString("name"),
+          campaignProps.getString("ad_group"),
+          campaignProps.getString("ad_creative")));
+      return;
+    }
     if (properties == null || properties.size() == 0) {
       mLogger.verbose("Calling appboy.logCustomEvent for event %s with no properties.", event);
       mAppboy.logCustomEvent(event);
