@@ -1,3 +1,6 @@
+## 2.0.2
+* Fixes a bug where an "Install Attributed" event without any data was causing a crash.
+
 ## 2.0.1
 * Uses analytics-android 4.2.6 and Appboy 2.0.4
 * Fixes an issue where install attribution data was being sent up as an event.

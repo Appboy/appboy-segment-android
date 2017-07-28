@@ -186,6 +186,9 @@ public class AppboyIntegration extends Integration<Appboy> {
   @Override
   public void track(TrackPayload track) {
     super.track(track);
+    if (track == null) {
+      return;
+    }
     String event = track.event();
     if (event == null) {
       return;
@@ -193,11 +196,13 @@ public class AppboyIntegration extends Integration<Appboy> {
     Properties properties = track.properties();
     if (event.equals("Install Attributed")) {
       Properties campaignProps = (Properties) properties.get("campaign");
-      mAppboy.getCurrentUser().setAttributionData(new AttributionData(
-          campaignProps.getString("source"),
-          campaignProps.getString("name"),
-          campaignProps.getString("ad_group"),
-          campaignProps.getString("ad_creative")));
+      if (campaignProps != null) {
+        mAppboy.getCurrentUser().setAttributionData(new AttributionData(
+            campaignProps.getString("source"),
+            campaignProps.getString("name"),
+            campaignProps.getString("ad_group"),
+            campaignProps.getString("ad_creative")));
+      }
       return;
     }
     if (properties == null || properties.size() == 0) {
