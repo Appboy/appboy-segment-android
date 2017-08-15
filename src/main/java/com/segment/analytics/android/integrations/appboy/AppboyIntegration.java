@@ -24,8 +24,10 @@ import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 public class AppboyIntegration extends Integration<Appboy> {
@@ -38,6 +40,7 @@ public class AppboyIntegration extends Integration<Appboy> {
       "FEMALE"));
   private static final String DEFAULT_CURRENCY_CODE = "USD";
   private static final String API_KEY_KEY = "apiKey";
+  private static final String CUSTOM_ENDPOINT_KEY = "customEndpoint";
   private static final String REVENUE_KEY = "revenue";
   private static final String CURRENCY_KEY = "currency";
   private static final Set<String> APPBOY_RESERVED_TRAIT_KEYS = new HashSet<String>(Arrays.asList(
@@ -53,10 +56,14 @@ public class AppboyIntegration extends Integration<Appboy> {
         logger.info("Appboy+Segment integration attempted to initialize without api key.");
         return null;
       }
-      AppboyConfig config = new AppboyConfig.Builder()
-              .setApiKey(apiKey)
-              .setSdkFlavor(flavor)
-              .build();
+      String customEndpoint = settings.getString(CUSTOM_ENDPOINT_KEY);
+      AppboyConfig.Builder builder = new AppboyConfig.Builder()
+          .setApiKey(apiKey)
+          .setSdkFlavor(flavor);
+      if (!StringUtils.isNullOrBlank(customEndpoint)) {
+        builder.setCustomEndpoint(customEndpoint);
+      }
+      AppboyConfig config = builder.build();
       Appboy.configure(analytics.getApplication().getApplicationContext(), config);
       Appboy appboy = Appboy.getInstance(analytics.getApplication());
       logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
@@ -103,12 +110,13 @@ public class AppboyIntegration extends Integration<Appboy> {
       return;
     }
 
-    // TODO (Appboy) - Uncomment once Segment resolves the crash caused by accessing bithday()
-    Date birthday = null; // = traits.birthday();
+    Date birthday = traits.birthday();
     if (birthday != null) {
-      mAppboy.getCurrentUser().setDateOfBirth(birthday.getYear(),
-          Month.values()[birthday.getMonth()],
-          birthday.getDay());
+      Calendar birthdayCal = Calendar.getInstance(Locale.US);
+      birthdayCal.setTime(birthday);
+      mAppboy.getCurrentUser().setDateOfBirth(birthdayCal.get(Calendar.YEAR),
+          Month.values()[birthdayCal.get(Calendar.MONTH)],
+          birthdayCal.get(Calendar.DAY_OF_MONTH));
     }
 
     String email = traits.email();
