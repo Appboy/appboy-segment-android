@@ -76,7 +76,6 @@ public class AppboyIntegration extends Integration<Appboy> {
     }
   };
 
-  private boolean mRefreshData;
   private final Appboy mAppboy;
   private final String mToken;
   private final Logger mLogger;
@@ -202,16 +201,21 @@ public class AppboyIntegration extends Integration<Appboy> {
       return;
     }
     Properties properties = track.properties();
-    if (event.equals("Install Attributed")) {
-      Properties campaignProps = (Properties) properties.get("campaign");
-      if (campaignProps != null) {
-        mAppboy.getCurrentUser().setAttributionData(new AttributionData(
-            campaignProps.getString("source"),
-            campaignProps.getString("name"),
-            campaignProps.getString("ad_group"),
-            campaignProps.getString("ad_creative")));
+    try {
+      if (event.equals("Install Attributed")) {
+        Properties campaignProps = (Properties) properties.get("campaign");
+        if (campaignProps != null) {
+          mAppboy.getCurrentUser().setAttributionData(new AttributionData(
+              campaignProps.getString("source"),
+              campaignProps.getString("name"),
+              campaignProps.getString("ad_group"),
+              campaignProps.getString("ad_creative")));
+        }
+        return;
       }
-      return;
+    } catch (Exception exception) {
+      mLogger.verbose("This Install Attributed event is not in the proper format and cannot be"
+          + " logged. The exception is %s.", exception);
     }
     if (properties == null || properties.size() == 0) {
       mLogger.verbose("Calling appboy.logCustomEvent for event %s with no properties.", event);
@@ -245,19 +249,13 @@ public class AppboyIntegration extends Integration<Appboy> {
   @Override
   public void onActivityStarted(Activity activity) {
     super.onActivityStarted(activity);
-    if (mAppboy.openSession(activity)) {
-      mRefreshData = true;
-    }
+    mAppboy.openSession(activity);
   }
 
   @Override
   public void onActivityResumed(Activity activity) {
     super.onActivityResumed(activity);
     AppboyInAppMessageManager.getInstance().registerInAppMessageManager(activity);
-    if (mRefreshData) {
-      mAppboy.requestInAppMessageRefresh();
-      mRefreshData = false;
-    }
   }
 
   @Override
