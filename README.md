@@ -1,3 +1,8 @@
+![Braze Logo](https://github.com/Appboy/appboy-segment-android/blob/master/braze-logo.png)
+
+Braze Android Segment SDK
+==========
+
 analytics-android-integration-appboy
 ======================================
 
