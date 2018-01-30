@@ -3,9 +3,6 @@
 Braze Android Segment SDK
 ==========
 
-analytics-android-integration-appboy
-======================================
-
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.appboy/appboy-segment-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.appboy/appboy-segment-integration)
 [![Javadocs](http://javadoc-badge.appspot.com/com.appboy/appboy-segment-integration.svg?label=javadoc)](http://javadoc-badge.appspot.com/com.appboy/appboy-segment-integration)
 
