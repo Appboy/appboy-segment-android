@@ -42,6 +42,8 @@ import static org.powermock.api.mockito.PowerMockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
 
+import static com.segment.analytics.Utils.createTraits;
+
 // Note - we can't use the Robelectric runner because it can't mock Appboy because it's final.
 // This means that Android jar methods will return default values (because we configured it that
 // way in the build.gradle) which can lead to strange behavior.
@@ -125,16 +127,17 @@ public class AppboyTest  {
 
   @Test
   public void testIdentifyCallWithNoFieldsSet() {
-    Traits traits = new Traits();
+    Traits traits = createTraits("userId");
     IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     mIntegration.identify(identifyPayload);
+    verify(mAppboy, Mockito.times(1)).changeUser("userId");
     verifyNoMoreAppboyUserInteractions();
     verifyNoMoreAppboyInteractions();
   }
 
   @Test
   public void testIdentifyFields() {
-    Traits traits = new Traits();
+    Traits traits = createTraits("userId");
     traits.putEmail("a@o.o");
     traits.putFirstName("first");
     traits.putLastName("last");
@@ -165,13 +168,14 @@ public class AppboyTest  {
     verify(mAppboyUser).setCustomUserAttribute("long", new Long(15L));
     verify(mAppboyUser).setCustomUserAttribute("string", "value");
     verifyNoMoreAppboyUserInteractions();
+    verify(mAppboy, Mockito.times(1)).changeUser("userId");
     verify(mAppboy, Mockito.times(12)).getCurrentUser();
     verifyNoMoreAppboyInteractions();
   }
 
   @Test
   public void testIdentifyGender() {
-    Traits traits = new Traits();
+    Traits traits = createTraits("userId");
     traits.putGender("male");
     IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     mIntegration.identify(identifyPayload);
@@ -191,6 +195,7 @@ public class AppboyTest  {
     traits.putGender("f");
     identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     mIntegration.identify(identifyPayload);
+    verify(mAppboy, Mockito.times(6)).changeUser("userId");
     verify(mAppboyUser, Mockito.times(3)).setGender(Gender.FEMALE);
     verifyNoMoreAppboyUserInteractions();
     verify(mAppboy, Mockito.times(6)).getCurrentUser();
@@ -199,13 +204,14 @@ public class AppboyTest  {
 
   @Test
   public void testIdentifyGenderOnBadInputs() {
-    Traits traits = new Traits();
+    Traits traits = createTraits("userId");
     traits.putGender("males");
     IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     mIntegration.identify(identifyPayload);
     traits.putGender("female_1");
     identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     mIntegration.identify(identifyPayload);
+    verify(mAppboy, Mockito.times(2)).changeUser("userId");
     verifyNoMoreAppboyUserInteractions();
     verifyNoMoreAppboyInteractions();
   }

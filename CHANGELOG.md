@@ -1,3 +1,6 @@
+## 2.1.2
+* Uses analytics-android 4.3.1 and Braze 2.2.5
+
 ## 2.1.1
 * Uses analytics-android 4.3.1 and Braze 2.2.1
 * Fixes an issue where an Install Attributed event in the wrong format could cause a crash.
