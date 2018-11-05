@@ -31,8 +31,6 @@ import java.util.Locale;
 import java.util.Set;
 
 public class AppboyIntegration extends Integration<Appboy> {
-
-  // TODO (Appboy) - Create configuration for default IAM handling
   private static final String APPBOY_KEY = "Appboy";
   private static final Set<String> MALE_TOKENS = new HashSet<String>(Arrays.asList("M",
       "MALE"));
@@ -43,15 +41,16 @@ public class AppboyIntegration extends Integration<Appboy> {
   private static final String CUSTOM_ENDPOINT_KEY = "customEndpoint";
   private static final String REVENUE_KEY = "revenue";
   private static final String CURRENCY_KEY = "currency";
-  private static final Set<String> APPBOY_RESERVED_TRAIT_KEYS = new HashSet<String>(Arrays.asList(
-    "birthday", "email", "firstName", "lastName", "gender", "phone", "address", "anonymousId",
-    "userId"));
+  private static final String AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED = "automatic_in_app_message_registration_enabled";
+
   public static final Factory FACTORY = new Factory() {
     @Override
     public Integration<?> create(ValueMap settings, Analytics analytics) {
       Logger logger = analytics.logger(APPBOY_KEY);
       String apiKey = settings.getString(API_KEY_KEY);
       SdkFlavor flavor = SdkFlavor.SEGMENT;
+      boolean inAppMessageRegistrationEnabled = settings.getBoolean(AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED, true);
+
       if (StringUtils.isNullOrBlank(API_KEY_KEY)) {
         logger.info("Appboy+Segment integration attempted to initialize without api key.");
         return null;
@@ -63,11 +62,11 @@ public class AppboyIntegration extends Integration<Appboy> {
       if (!StringUtils.isNullOrBlank(customEndpoint)) {
         builder.setCustomEndpoint(customEndpoint);
       }
-      AppboyConfig config = builder.build();
-      Appboy.configure(analytics.getApplication().getApplicationContext(), config);
+
+      Appboy.configure(analytics.getApplication().getApplicationContext(), builder.build());
       Appboy appboy = Appboy.getInstance(analytics.getApplication());
       logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
-      return new AppboyIntegration(appboy, apiKey, logger);
+      return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled);
     }
 
     @Override
@@ -79,11 +78,13 @@ public class AppboyIntegration extends Integration<Appboy> {
   private final Appboy mAppboy;
   private final String mToken;
   private final Logger mLogger;
+  private final boolean mAutomaticInAppMessageRegistrationEnabled;
 
-  public AppboyIntegration(Appboy appboy, String token, Logger logger) {
+  public AppboyIntegration(Appboy appboy, String token, Logger logger, boolean automaticInAppMessageRegistrationEnabled) {
     mAppboy = appboy;
     mToken = token;
     mLogger = logger;
+    mAutomaticInAppMessageRegistrationEnabled = automaticInAppMessageRegistrationEnabled;
   }
 
   public String getToken() {
@@ -160,25 +161,23 @@ public class AppboyIntegration extends Integration<Appboy> {
     }
 
     for (String key : traits.keySet()) {
-      if (!APPBOY_RESERVED_TRAIT_KEYS.contains(key)) {
-        Object value = traits.get(key);
-        if (value instanceof Boolean) {
-          mAppboy.getCurrentUser().setCustomUserAttribute(key, (Boolean) value);
-        } else if (value instanceof Integer) {
-          mAppboy.getCurrentUser().setCustomUserAttribute(key, (Integer) value);
-        } else if (value instanceof Float) {
-          mAppboy.getCurrentUser().setCustomUserAttribute(key, (Float) value);
-        } else if (value instanceof Long) {
-          mAppboy.getCurrentUser().setCustomUserAttribute(key, (Long) value);
-        } else if (value instanceof Date) {
-          long secondsFromEpoch = ((Date) value).getTime() / 1000L;
-          mAppboy.getCurrentUser().setCustomUserAttributeToSecondsFromEpoch(key, secondsFromEpoch);
-        } else if (value instanceof String) {
-          mAppboy.getCurrentUser().setCustomUserAttribute(key, (String) value);
-        } else {
-          mLogger.info("Appboy can't map segment value for custom Appboy user "
-            + "attribute with key %s and value %s", key, value);
-        }
+      Object value = traits.get(key);
+      if (value instanceof Boolean) {
+        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Boolean) value);
+      } else if (value instanceof Integer) {
+        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Integer) value);
+      } else if (value instanceof Float) {
+        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Float) value);
+      } else if (value instanceof Long) {
+        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Long) value);
+      } else if (value instanceof Date) {
+        long secondsFromEpoch = ((Date) value).getTime() / 1000L;
+        mAppboy.getCurrentUser().setCustomUserAttributeToSecondsFromEpoch(key, secondsFromEpoch);
+      } else if (value instanceof String) {
+        mAppboy.getCurrentUser().setCustomUserAttribute(key, (String) value);
+      } else {
+        mLogger.info("Appboy can't map segment value for custom Appboy user "
+          + "attribute with key %s and value %s", key, value);
       }
     }
   }
@@ -253,20 +252,24 @@ public class AppboyIntegration extends Integration<Appboy> {
   }
 
   @Override
+  public void onActivityStopped(Activity activity) {
+    super.onActivityStopped(activity);
+    mAppboy.closeSession(activity);
+  }
+
+  @Override
   public void onActivityResumed(Activity activity) {
     super.onActivityResumed(activity);
-    AppboyInAppMessageManager.getInstance().registerInAppMessageManager(activity);
+    if (mAutomaticInAppMessageRegistrationEnabled) {
+      AppboyInAppMessageManager.getInstance().registerInAppMessageManager(activity);
+    }
   }
 
   @Override
   public void onActivityPaused(Activity activity) {
     super.onActivityPaused(activity);
-    AppboyInAppMessageManager.getInstance().unregisterInAppMessageManager(activity);
-  }
-
-  @Override
-  public void onActivityStopped(Activity activity) {
-    super.onActivityStopped(activity);
-    mAppboy.closeSession(activity);
+    if (mAutomaticInAppMessageRegistrationEnabled) {
+      AppboyInAppMessageManager.getInstance().unregisterInAppMessageManager(activity);
+    }
   }
 }
