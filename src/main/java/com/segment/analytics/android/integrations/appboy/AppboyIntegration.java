@@ -41,7 +41,8 @@ public class AppboyIntegration extends Integration<Appboy> {
   private static final String CUSTOM_ENDPOINT_KEY = "customEndpoint";
   private static final String REVENUE_KEY = "revenue";
   private static final String CURRENCY_KEY = "currency";
-  private static final String AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED = "automatic_in_app_message_registration_enabled";
+  private static final String AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED =
+          "automatic_in_app_message_registration_enabled";
 
   public static final Factory FACTORY = new Factory() {
     @Override
@@ -49,7 +50,8 @@ public class AppboyIntegration extends Integration<Appboy> {
       Logger logger = analytics.logger(APPBOY_KEY);
       String apiKey = settings.getString(API_KEY_KEY);
       SdkFlavor flavor = SdkFlavor.SEGMENT;
-      boolean inAppMessageRegistrationEnabled = settings.getBoolean(AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED, true);
+      boolean inAppMessageRegistrationEnabled =
+              settings.getBoolean(AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED, true);
 
       if (StringUtils.isNullOrBlank(API_KEY_KEY)) {
         logger.info("Appboy+Segment integration attempted to initialize without api key.");
@@ -80,7 +82,8 @@ public class AppboyIntegration extends Integration<Appboy> {
   private final Logger mLogger;
   private final boolean mAutomaticInAppMessageRegistrationEnabled;
 
-  public AppboyIntegration(Appboy appboy, String token, Logger logger, boolean automaticInAppMessageRegistrationEnabled) {
+  public AppboyIntegration(Appboy appboy, String token, Logger logger,
+                           boolean automaticInAppMessageRegistrationEnabled) {
     mAppboy = appboy;
     mToken = token;
     mLogger = logger;
