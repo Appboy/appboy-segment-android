@@ -51,7 +51,7 @@ dependencies {
 
   compileOnly 'com.segment.analytics.android:analytics:4.3.1'
 
-  api 'com.appboy:android-sdk-ui:3.2.1'
+  api 'com.appboy:android-sdk-ui:3.3.0'
 
   testImplementation 'junit:junit:4.12'
   testImplementation('org.robolectric:robolectric:3.0') {
@@ -76,7 +76,7 @@ dependencies {
   androidTestImplementation 'junit:junit:4.12'
 }
 
-version = '2.3.0'
+version = '2.4.0'
 
 publishing {
   publications {
