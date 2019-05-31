@@ -1,3 +1,8 @@
+## 2.4.1
+
+##### Fixed
+- Fixed an issue where the following default attributes would also be logged as custom attributes when set through a call to `identify()`: "birthday", "email", "firstName", "lastName", "gender", "phone", "address".
+
 ## 2.4.0
 
 ##### Breaking

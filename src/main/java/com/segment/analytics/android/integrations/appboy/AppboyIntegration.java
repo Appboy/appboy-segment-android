@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -43,6 +44,8 @@ public class AppboyIntegration extends Integration<Appboy> {
   private static final String CURRENCY_KEY = "currency";
   private static final String AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED =
           "automatic_in_app_message_registration_enabled";
+  private static final List<String> RESERVED_KEYS = Arrays.asList("birthday", "email", "firstName",
+    "lastName", "gender", "phone", "address");
 
   public static final Factory FACTORY = new Factory() {
     @Override
@@ -164,6 +167,10 @@ public class AppboyIntegration extends Integration<Appboy> {
     }
 
     for (String key : traits.keySet()) {
+      if (RESERVED_KEYS.contains(key)) {
+        mLogger.debug("Skipping reserved key %s", key);
+        continue;
+      }
       Object value = traits.get(key);
       if (value instanceof Boolean) {
         mAppboy.getCurrentUser().setCustomUserAttribute(key, (Boolean) value);
