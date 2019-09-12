@@ -47,50 +47,63 @@ public class AppboyIntegration extends Integration<Appboy> {
   private static final List<String> RESERVED_KEYS = Arrays.asList("birthday", "email", "firstName",
     "lastName", "gender", "phone", "address");
 
-  public static final Factory FACTORY = new Factory() {
-    @Override
-    public Integration<?> create(ValueMap settings, Analytics analytics) {
-      Logger logger = analytics.logger(APPBOY_KEY);
-      String apiKey = settings.getString(API_KEY_KEY);
-      SdkFlavor flavor = SdkFlavor.SEGMENT;
-      boolean inAppMessageRegistrationEnabled =
-              settings.getBoolean(AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED, true);
+  public static Factory build(final AppboyIntegrationOptions options) {
+    return new Factory() {
+      @Override
+      public Integration<?> create(ValueMap settings, Analytics analytics) {
+        Logger logger = analytics.logger(APPBOY_KEY);
+        String apiKey = settings.getString(API_KEY_KEY);
+        SdkFlavor flavor = SdkFlavor.SEGMENT;
+        boolean inAppMessageRegistrationEnabled =
+            settings.getBoolean(AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED, true);
 
-      if (StringUtils.isNullOrBlank(API_KEY_KEY)) {
-        logger.info("Appboy+Segment integration attempted to initialize without api key.");
-        return null;
+        if (StringUtils.isNullOrBlank(API_KEY_KEY)) {
+          logger.info("Appboy+Segment integration attempted to initialize without api key.");
+          return null;
+        }
+
+        String customEndpoint = settings.getString(CUSTOM_ENDPOINT_KEY);
+        AppboyConfig.Builder builder = new AppboyConfig.Builder()
+            .setApiKey(apiKey)
+            .setSdkFlavor(flavor);
+        if (!StringUtils.isNullOrBlank(customEndpoint)) {
+          builder.setCustomEndpoint(customEndpoint);
+        }
+
+        Appboy.configure(analytics.getApplication().getApplicationContext(), builder.build());
+        Appboy appboy = Appboy.getInstance(analytics.getApplication());
+        logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
+        return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled, options.userIdMapper());
       }
-      String customEndpoint = settings.getString(CUSTOM_ENDPOINT_KEY);
-      AppboyConfig.Builder builder = new AppboyConfig.Builder()
-          .setApiKey(apiKey)
-          .setSdkFlavor(flavor);
-      if (!StringUtils.isNullOrBlank(customEndpoint)) {
-        builder.setCustomEndpoint(customEndpoint);
+
+      @Override
+      public String key() {
+        return APPBOY_KEY;
       }
+    };
+  }
 
-      Appboy.configure(analytics.getApplication().getApplicationContext(), builder.build());
-      Appboy appboy = Appboy.getInstance(analytics.getApplication());
-      logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
-      return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled);
-    }
-
+  public static final Factory FACTORY = build(new AppboyIntegrationOptions() {
     @Override
-    public String key() {
-      return APPBOY_KEY;
+    public UserIdMapper userIdMapper() {
+      return new DefaultUserIdMapper();
     }
-  };
+  });
 
   private final Appboy mAppboy;
   private final String mToken;
   private final Logger mLogger;
   private final boolean mAutomaticInAppMessageRegistrationEnabled;
+  private final UserIdMapper mUserIdMapper;
 
   public AppboyIntegration(Appboy appboy, String token, Logger logger,
-                           boolean automaticInAppMessageRegistrationEnabled) {
+                           boolean automaticInAppMessageRegistrationEnabled,
+                           UserIdMapper userIdMapper) {
     mAppboy = appboy;
     mToken = token;
     mLogger = logger;
     mAutomaticInAppMessageRegistrationEnabled = automaticInAppMessageRegistrationEnabled;
+    mUserIdMapper = userIdMapper;
   }
 
   public String getToken() {
