@@ -1,5 +1,6 @@
 package com.segment.analytics.android.integrations.appboy;
 
+import android.support.annotation.Nullable;
 import com.appboy.Appboy;
 
 public interface UserIdMapper {
@@ -10,5 +11,5 @@ public interface UserIdMapper {
    * @param segmentUserId user id reported to segment in identify calls
    * @return userId as should be reported to Braze in the {@link Appboy#changeUser(String)} method.
    */
-  String transformUserId(String segmentUserId);
+  @Nullable String transformUserId(@Nullable String segmentUserId);
 }
