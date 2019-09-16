@@ -70,10 +70,15 @@ public class AppboyIntegration extends Integration<Appboy> {
           builder.setCustomEndpoint(customEndpoint);
         }
 
+        UserIdMapper userIdMapper = options.userIdMapper();
+        if (userIdMapper == null) {
+          userIdMapper = new DefaultUserIdMapper();
+        }
+
         Appboy.configure(analytics.getApplication().getApplicationContext(), builder.build());
         Appboy appboy = Appboy.getInstance(analytics.getApplication());
         logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
-        return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled, options.userIdMapper());
+        return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled, userIdMapper);
       }
 
       @Override
@@ -86,7 +91,7 @@ public class AppboyIntegration extends Integration<Appboy> {
   public static final Factory FACTORY = build(new AppboyIntegrationOptions() {
     @Override
     public UserIdMapper userIdMapper() {
-      return new DefaultUserIdMapper();
+      return null;
     }
   });
 
