@@ -47,6 +47,8 @@ public class AppboyIntegration extends Integration<Appboy> {
   private static final List<String> RESERVED_KEYS = Arrays.asList("birthday", "email", "firstName",
     "lastName", "gender", "phone", "address");
 
+  public static final Factory FACTORY = build(AppboyIntegrationOptions.builder().build());
+
   public static Factory build(final AppboyIntegrationOptions options) {
     return new Factory() {
       @Override
@@ -70,7 +72,7 @@ public class AppboyIntegration extends Integration<Appboy> {
           builder.setCustomEndpoint(customEndpoint);
         }
 
-        UserIdMapper userIdMapper = options.userIdMapper();
+        UserIdMapper userIdMapper = options.getUserIdMapper();
         if (userIdMapper == null) {
           userIdMapper = new DefaultUserIdMapper();
         }
@@ -87,13 +89,6 @@ public class AppboyIntegration extends Integration<Appboy> {
       }
     };
   }
-
-  public static final Factory FACTORY = build(new AppboyIntegrationOptions() {
-    @Override
-    public UserIdMapper userIdMapper() {
-      return null;
-    }
-  });
 
   private final Appboy mAppboy;
   private final String mToken;
