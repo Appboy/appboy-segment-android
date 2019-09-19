@@ -47,9 +47,9 @@ public class AppboyIntegration extends Integration<Appboy> {
   private static final List<String> RESERVED_KEYS = Arrays.asList("birthday", "email", "firstName",
     "lastName", "gender", "phone", "address");
 
-  public static final Factory FACTORY = build(AppboyIntegrationOptions.builder().build());
+  public static final Factory FACTORY = factory(AppboyIntegrationOptions.builder().build());
 
-  public static Factory build(final AppboyIntegrationOptions options) {
+  public static Factory factory(final AppboyIntegrationOptions options) {
     return new Factory() {
       @Override
       public Integration<?> create(ValueMap settings, Analytics analytics) {
