@@ -30,7 +30,6 @@ public class AppboyIntegrationOptionsAndroidTest {
 
   @Test
   public void testUserIdMapperTransformsAppboyUserId() {
-
     Traits traits = createTraits(ORIGINAL_USER_ID);
     IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
 
