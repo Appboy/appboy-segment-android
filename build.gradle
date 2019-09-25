@@ -51,7 +51,7 @@ dependencies {
 
   compileOnly 'com.segment.analytics.android:analytics:4.3.1'
 
-  api 'com.appboy:android-sdk-ui:3.3.0'
+  api 'com.appboy:android-sdk-ui:3.7.1'
 
   testImplementation 'junit:junit:4.12'
   testImplementation('org.robolectric:robolectric:3.0') {
@@ -69,14 +69,13 @@ dependencies {
   testImplementation 'org.powermock:powermock-module-junit4-rule:1.6.2'
   testImplementation 'org.powermock:powermock-api-mockito:1.6.2'
   testImplementation 'org.powermock:powermock-classloading-xstream:1.6.2'
-  testImplementation files('libs/amazon-device-messaging-1.0.1.jar')
 
   androidTestImplementation 'com.android.support.test:runner:1.0.2'
   androidTestImplementation 'com.android.support.test:rules:1.0.2'
   androidTestImplementation 'junit:junit:4.12'
 }
 
-version = '2.4.1'
+version = '2.5.0'
 
 publishing {
   publications {
