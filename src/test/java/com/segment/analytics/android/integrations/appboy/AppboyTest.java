@@ -73,7 +73,7 @@ public class AppboyTest  {
     mLogger = Logger.with(Analytics.LogLevel.DEBUG);
     when(mAnalytics.logger("Appboy")).thenReturn(mLogger);
     when(mAnalytics.getApplication()).thenReturn(mContext);
-    mIntegration = new AppboyIntegration(mAppboy, "foo", mLogger, true);
+    mIntegration = new AppboyIntegration(mAppboy, "foo", mLogger, true, new DefaultUserIdMapper());
   }
 
   @Test
