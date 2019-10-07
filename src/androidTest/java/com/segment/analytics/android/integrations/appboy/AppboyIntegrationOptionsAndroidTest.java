@@ -36,7 +36,7 @@ public class AppboyIntegrationOptionsAndroidTest {
 
     Logger logger = Logger.with(Analytics.LogLevel.DEBUG);
 
-    AppboyIntegration integration = new AppboyIntegration(Appboy.getInstance(getContext()), "foo", logger, true, new ReplaceUserIdMapper());
+    AppboyIntegration integration = new AppboyIntegration(Appboy.getInstance(getContext()), "foo", logger, true, new PreferencesTraitsCache(getContext()), new ReplaceUserIdMapper());
 
     integration.identify(identifyPayload);
 

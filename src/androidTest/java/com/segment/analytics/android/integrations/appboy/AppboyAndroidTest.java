@@ -33,7 +33,8 @@ public class AppboyAndroidTest {
     Traits traits = createTraits(testUserId);
     IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     Logger logger = Logger.with(Analytics.LogLevel.DEBUG);
-    AppboyIntegration integration = new AppboyIntegration(Appboy.getInstance(getContext()), "foo", logger, true, new DefaultUserIdMapper());
+    AppboyIntegration integration = new AppboyIntegration(Appboy.getInstance(getContext()), "foo", logger, true,
+        new PreferencesTraitsCache(getContext()), new DefaultUserIdMapper());
     integration.identify(identifyPayload);
 
     assertEquals(testUserId, Appboy.getInstance(getContext()).getCurrentUser().getUserId());

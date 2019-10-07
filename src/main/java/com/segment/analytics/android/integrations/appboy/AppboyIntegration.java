@@ -77,10 +77,12 @@ public class AppboyIntegration extends Integration<Appboy> {
           userIdMapper = new DefaultUserIdMapper();
         }
 
+        TraitsCache traitsCache = new PreferencesTraitsCache(analytics.getApplication());
+
         Appboy.configure(analytics.getApplication().getApplicationContext(), builder.build());
         Appboy appboy = Appboy.getInstance(analytics.getApplication());
         logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
-        return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled, userIdMapper);
+        return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled, traitsCache, userIdMapper);
       }
 
       @Override
@@ -95,15 +97,18 @@ public class AppboyIntegration extends Integration<Appboy> {
   private final Logger mLogger;
   private final boolean mAutomaticInAppMessageRegistrationEnabled;
   private final UserIdMapper mUserIdMapper;
+  private final TraitsCache mTraitsCache;
 
   public AppboyIntegration(Appboy appboy, String token, Logger logger,
                            boolean automaticInAppMessageRegistrationEnabled,
+                           TraitsCache traitsCache,
                            UserIdMapper userIdMapper) {
     mAppboy = appboy;
     mToken = token;
     mLogger = logger;
     mAutomaticInAppMessageRegistrationEnabled = automaticInAppMessageRegistrationEnabled;
     mUserIdMapper = userIdMapper;
+    mTraitsCache = traitsCache;
   }
 
   public String getToken() {
@@ -119,12 +124,16 @@ public class AppboyIntegration extends Integration<Appboy> {
   public void identify(IdentifyPayload identify) {
     super.identify(identify);
 
+
     String userId = identify.userId();
     if (!StringUtils.isNullOrBlank(userId)) {
       mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
     }
 
     Traits traits = identify.traits();
+
+    Traits lastEmittedTraits = mTraitsCache.load();
+
     if (traits == null) {
       return;
     }
@@ -203,6 +212,8 @@ public class AppboyIntegration extends Integration<Appboy> {
           + "attribute with key %s and value %s", key, value);
       }
     }
+
+    mTraitsCache.save(traits);
   }
 
   @Override
