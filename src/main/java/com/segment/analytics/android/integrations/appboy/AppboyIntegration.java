@@ -132,6 +132,10 @@ public class AppboyIntegration extends Integration<Appboy> {
     String userId = identify.userId();
     if (!StringUtils.isNullOrBlank(userId)) {
       mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
+
+      if (mTraitsCache != null) {
+        mTraitsCache.clear();
+      }
     }
 
     Traits traits = identify.traits();
