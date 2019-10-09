@@ -124,7 +124,6 @@ public class AppboyIntegrationOptionsAndroidTest {
   }
 
   class ReplaceUserIdMapper implements UserIdMapper {
-
     @Override
     public String transformUserId(String segmentUserId) {
       return segmentUserId.replaceFirst(USER_ID, TRANSFORMED_USER_ID);
