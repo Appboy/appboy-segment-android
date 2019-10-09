@@ -6,4 +6,6 @@ interface TraitsCache {
   void save(Traits traits);
 
   Traits load();
+
+  void clear();
 }

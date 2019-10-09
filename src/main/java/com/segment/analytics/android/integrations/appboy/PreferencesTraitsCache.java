@@ -46,6 +46,11 @@ public class PreferencesTraitsCache implements TraitsCache {
     }
   }
 
+  @Override
+  public void clear() {
+    preferences.edit().clear().apply();
+  }
+
   private Traits buildTraits(Map<String, Object> map) {
     Traits result = new Traits();
 

@@ -20,6 +20,7 @@ import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
 
+import java.util.Map;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
@@ -77,7 +78,10 @@ public class AppboyIntegration extends Integration<Appboy> {
           userIdMapper = new DefaultUserIdMapper();
         }
 
-        TraitsCache traitsCache = new PreferencesTraitsCache(analytics.getApplication());
+        TraitsCache traitsCache = null;
+        if (options.isTraitDiffingEnabled()) {
+          traitsCache = new PreferencesTraitsCache(analytics.getApplication());
+        }
 
         Appboy.configure(analytics.getApplication().getApplicationContext(), builder.build());
         Appboy appboy = Appboy.getInstance(analytics.getApplication());
@@ -132,10 +136,16 @@ public class AppboyIntegration extends Integration<Appboy> {
 
     Traits traits = identify.traits();
 
-    Traits lastEmittedTraits = mTraitsCache.load();
-
     if (traits == null) {
       return;
+    }
+
+    if (mTraitsCache != null) {
+      Traits lastEmittedTraits = mTraitsCache.load();
+
+      mTraitsCache.save(traits);
+
+      traits = diffTraits(traits, lastEmittedTraits);
     }
 
     Date birthday = traits.birthday();
@@ -209,11 +219,25 @@ public class AppboyIntegration extends Integration<Appboy> {
         mAppboy.getCurrentUser().setCustomUserAttribute(key, (String) value);
       } else {
         mLogger.info("Appboy can't map segment value for custom Appboy user "
-          + "attribute with key %s and value %s", key, value);
+            + "attribute with key %s and value %s", key, value);
+      }
+    }
+  }
+
+  private Traits diffTraits(Traits traits, Traits lastEmittedTraits) {
+    if (lastEmittedTraits == null) return traits;
+
+    Traits diffed = new Traits();
+
+    for (Map.Entry<String, Object> trait : traits.entrySet()) {
+      Object storedValue = lastEmittedTraits.get(trait.getKey());
+
+      if (storedValue == null || !trait.getValue().equals(storedValue)) {
+        diffed.put(trait.getKey(), trait.getValue());
       }
     }
 
-    mTraitsCache.save(traits);
+    return diffed;
   }
 
   @Override

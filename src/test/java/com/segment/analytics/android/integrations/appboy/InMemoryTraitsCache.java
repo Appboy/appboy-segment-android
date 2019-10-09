@@ -15,4 +15,9 @@ public class InMemoryTraitsCache implements TraitsCache {
   public Traits load() {
     return traits;
   }
+
+  @Override
+  public void clear() {
+    traits = null;
+  }
 }
