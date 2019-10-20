@@ -24,7 +24,7 @@ android {
     minSdkVersion 16
     targetSdkVersion 28
 
-    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
   }
 
   compileOptions {
@@ -70,8 +70,8 @@ dependencies {
   testImplementation 'org.powermock:powermock-api-mockito:1.6.2'
   testImplementation 'org.powermock:powermock-classloading-xstream:1.6.2'
 
-  androidTestImplementation 'com.android.support.test:runner:1.0.2'
-  androidTestImplementation 'com.android.support.test:rules:1.0.2'
+  androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+  androidTestImplementation 'androidx.test:rules:1.1.1'
   androidTestImplementation 'junit:junit:4.12'
 }
 
