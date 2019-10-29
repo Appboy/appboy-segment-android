@@ -215,7 +215,7 @@ public class AppboyTest  {
     traits.putGender("female_1");
     identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     mIntegration.identify(identifyPayload);
-    verify(mAppboy, Mockito.times(2)).changeUser("userId");
+    verify(mAppboy, Mockito.times(1)).changeUser("userId");
     //verifyNoMoreAppboyUserInteractions();
     //verifyNoMoreAppboyInteractions();
   }

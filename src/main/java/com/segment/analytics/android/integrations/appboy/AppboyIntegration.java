@@ -128,13 +128,17 @@ public class AppboyIntegration extends Integration<Appboy> {
   public void identify(IdentifyPayload identify) {
     super.identify(identify);
 
-
     String userId = identify.userId();
     if (!StringUtils.isNullOrBlank(userId)) {
-      mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
 
-      if (mTraitsCache != null) {
-        mTraitsCache.clear();
+      String cachedUserId = mTraitsCache.load().userId();
+
+      if (!userId.equals(cachedUserId)) {
+        mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
+
+        if (mTraitsCache != null) {
+          mTraitsCache.clear();
+        }
       }
     }
 
@@ -304,6 +308,15 @@ public class AppboyIntegration extends Integration<Appboy> {
       mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
         event, propertiesJson.toString());
       mAppboy.logCustomEvent(event, new AppboyProperties(propertiesJson));
+    }
+  }
+
+  @Override
+  public void reset() {
+    super.reset();
+
+    if (mTraitsCache != null) {
+      mTraitsCache.clear();
     }
   }
 

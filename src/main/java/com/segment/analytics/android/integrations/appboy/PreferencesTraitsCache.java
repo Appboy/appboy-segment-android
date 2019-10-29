@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import com.segment.analytics.Cartographer;
 import com.segment.analytics.Traits;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -36,13 +37,13 @@ public class PreferencesTraitsCache implements TraitsCache {
   public Traits load() {
     String json = preferences.getString(PREFS_KEY, null);
 
-    if (isNullOrEmpty(json)) return null;
+    if (isNullOrEmpty(json)) return new Traits();
 
     try {
       Map<String, Object> map = cartographer.fromJson(json);
       return buildTraits(map);
     } catch (IOException ignored) {
-      return null;
+      return new Traits();
     }
   }
 

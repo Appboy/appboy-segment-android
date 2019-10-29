@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 public class AppboyIntegrationOptionsAndroidTest {
 
   private static final String USER_ID = "testUser";
+  private static final String OTHER_USER_ID = "testUser2";
   private static final String TRANSFORMED_USER_ID = "transformedUser";
   private static final String TRAIT_EMAIL = "test@segment.com";
   private static final String TRAIT_EMAIL_UPDATED = "updated@segment.com";
@@ -115,6 +116,46 @@ public class AppboyIntegrationOptionsAndroidTest {
     InOrder inOrder = Mockito.inOrder(appboyUser);
     inOrder.verify(appboyUser, times(1)).setEmail(TRAIT_EMAIL);
     inOrder.verify(appboyUser, times(1)).setEmail(TRAIT_EMAIL_UPDATED);
+  }
+
+  @Test
+  public void testAvoidTriggeringRepeatedUserIdUpdates() {
+    Traits traits = createTraits(USER_ID);
+    traits.putEmail(TRAIT_EMAIL);
+
+    callIdentifyWithTraits(traits);
+    callIdentifyWithTraits(traits);
+
+    verify(appboyUser, times(1)).setEmail(TRAIT_EMAIL);
+    verify(appboy, times(1)).changeUser(TRANSFORMED_USER_ID);
+  }
+
+  @Test
+  public void clearCacheIfUserIdChanges() {
+    Traits traits = createTraits(USER_ID);
+    traits.putEmail(TRAIT_EMAIL);
+
+    Traits traitsUpdate = createTraits(OTHER_USER_ID);
+    traitsUpdate.putEmail(TRAIT_EMAIL);
+
+    callIdentifyWithTraits(traits);
+    callIdentifyWithTraits(traitsUpdate);
+
+    verify(appboyUser, times(2)).setEmail(TRAIT_EMAIL);
+  }
+
+  @Test
+  public void clearCacheOnReset() {
+    Traits traits = createTraits(USER_ID);
+    traits.putEmail(TRAIT_EMAIL);
+
+    callIdentifyWithTraits(traits);
+
+    appboyIntegration.reset();
+
+    callIdentifyWithTraits(traits);
+
+    verify(appboyUser, times(2)).setEmail(TRAIT_EMAIL);
   }
 
   public void callIdentifyWithTraits(Traits traits) {

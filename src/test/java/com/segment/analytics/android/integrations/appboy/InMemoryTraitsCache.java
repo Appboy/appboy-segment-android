@@ -4,7 +4,7 @@ import com.segment.analytics.Traits;
 
 public class InMemoryTraitsCache implements TraitsCache {
 
-  private Traits traits;
+  private Traits traits = new Traits();
 
   @Override
   public void save(Traits traits) {
@@ -18,6 +18,6 @@ public class InMemoryTraitsCache implements TraitsCache {
 
   @Override
   public void clear() {
-    traits = null;
+    traits = new Traits();
   }
 }
