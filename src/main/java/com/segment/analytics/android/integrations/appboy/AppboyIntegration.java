@@ -20,6 +20,7 @@ import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
 
+import java.util.Map;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
@@ -77,10 +78,15 @@ public class AppboyIntegration extends Integration<Appboy> {
           userIdMapper = new DefaultUserIdMapper();
         }
 
+        TraitsCache traitsCache = null;
+        if (options.isTraitDiffingEnabled()) {
+          traitsCache = new PreferencesTraitsCache(analytics.getApplication());
+        }
+
         Appboy.configure(analytics.getApplication().getApplicationContext(), builder.build());
         Appboy appboy = Appboy.getInstance(analytics.getApplication());
         logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
-        return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled, userIdMapper);
+        return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled, traitsCache, userIdMapper);
       }
 
       @Override
@@ -95,15 +101,18 @@ public class AppboyIntegration extends Integration<Appboy> {
   private final Logger mLogger;
   private final boolean mAutomaticInAppMessageRegistrationEnabled;
   private final UserIdMapper mUserIdMapper;
+  private final TraitsCache mTraitsCache;
 
   public AppboyIntegration(Appboy appboy, String token, Logger logger,
                            boolean automaticInAppMessageRegistrationEnabled,
+                           TraitsCache traitsCache,
                            UserIdMapper userIdMapper) {
     mAppboy = appboy;
     mToken = token;
     mLogger = logger;
     mAutomaticInAppMessageRegistrationEnabled = automaticInAppMessageRegistrationEnabled;
     mUserIdMapper = userIdMapper;
+    mTraitsCache = traitsCache;
   }
 
   public String getToken() {
@@ -121,12 +130,30 @@ public class AppboyIntegration extends Integration<Appboy> {
 
     String userId = identify.userId();
     if (!StringUtils.isNullOrBlank(userId)) {
-      mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
+
+      String cachedUserId = mTraitsCache.load().userId();
+
+      if (!userId.equals(cachedUserId)) {
+        mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
+
+        if (mTraitsCache != null) {
+          mTraitsCache.clear();
+        }
+      }
     }
 
     Traits traits = identify.traits();
+
     if (traits == null) {
       return;
+    }
+
+    if (mTraitsCache != null) {
+      Traits lastEmittedTraits = mTraitsCache.load();
+
+      mTraitsCache.save(traits);
+
+      traits = diffTraits(traits, lastEmittedTraits);
     }
 
     Date birthday = traits.birthday();
@@ -200,9 +227,25 @@ public class AppboyIntegration extends Integration<Appboy> {
         mAppboy.getCurrentUser().setCustomUserAttribute(key, (String) value);
       } else {
         mLogger.info("Appboy can't map segment value for custom Appboy user "
-          + "attribute with key %s and value %s", key, value);
+            + "attribute with key %s and value %s", key, value);
       }
     }
+  }
+
+  private Traits diffTraits(Traits traits, Traits lastEmittedTraits) {
+    if (lastEmittedTraits == null) return traits;
+
+    Traits diffed = new Traits();
+
+    for (Map.Entry<String, Object> trait : traits.entrySet()) {
+      Object storedValue = lastEmittedTraits.get(trait.getKey());
+
+      if (storedValue == null || !trait.getValue().equals(storedValue)) {
+        diffed.put(trait.getKey(), trait.getValue());
+      }
+    }
+
+    return diffed;
   }
 
   @Override
@@ -265,6 +308,15 @@ public class AppboyIntegration extends Integration<Appboy> {
       mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
         event, propertiesJson.toString());
       mAppboy.logCustomEvent(event, new AppboyProperties(propertiesJson));
+    }
+  }
+
+  @Override
+  public void reset() {
+    super.reset();
+
+    if (mTraitsCache != null) {
+      mTraitsCache.clear();
     }
   }
 
