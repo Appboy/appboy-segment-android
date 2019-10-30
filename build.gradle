@@ -7,12 +7,17 @@ buildscript {
 
   dependencies {
     classpath 'com.android.tools.build:gradle:3.3.2'
-  }
+    classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+ }
 }
 
 apply plugin: 'com.android.library'
 apply plugin: 'checkstyle'
 apply plugin: 'maven-publish'
+apply plugin: 'com.github.dcendents.android-maven'
+
+
+group = "com.github.adevintaspain"
 
 android {
   compileSdkVersion 28
