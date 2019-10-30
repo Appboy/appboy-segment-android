@@ -3,8 +3,29 @@
 Braze Android Segment SDK
 ==========
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.appboy/appboy-segment-integration/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.appboy/appboy-segment-integration)
-[![Javadocs](http://javadoc-badge.appspot.com/com.appboy/appboy-segment-integration.svg?label=javadoc)](http://javadoc-badge.appspot.com/com.appboy/appboy-segment-integration) [![](https://jitpack.io/v/AdevintaSpain/appboy-segment-android.svg)](https://jitpack.io/#AdevintaSpain/appboy-segment-android)
+[![Javadocs](http://javadoc-badge.appspot.com/com.appboy/appboy-segment-integration.svg?label=javadoc)](http://javadoc-badge.appspot.com/com.appboy/appboy-segment-integration) 
+
+How to
+To get a Git project into your build:
+
+Step 1. Add the JitPack repository to your build file
+
+```
+allprojects {
+  repositories {
+    ...
+    maven { url 'https://jitpack.io' }
+  }
+}
+```
+  
+Step 2. Add the dependency
+
+```
+	dependencies {
+  	        implementation 'com.github.AdevintaSpain:appboy-segment-android:2.4.1.0001'
+	}
+```
 
 
 Braze integration for [analytics-android](https://github.com/segmentio/analytics-android).
