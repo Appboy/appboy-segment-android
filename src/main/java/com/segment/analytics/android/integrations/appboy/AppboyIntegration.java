@@ -176,6 +176,8 @@ public class AppboyIntegration extends Integration<Appboy> {
         mAppboy.getCurrentUser().setCustomUserAttribute(key, (Boolean) value);
       } else if (value instanceof Integer) {
         mAppboy.getCurrentUser().setCustomUserAttribute(key, (Integer) value);
+      } else if (value instanceof Double) {
+        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Double) value);
       } else if (value instanceof Float) {
         mAppboy.getCurrentUser().setCustomUserAttribute(key, (Float) value);
       } else if (value instanceof Long) {

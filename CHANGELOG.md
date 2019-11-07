@@ -1,3 +1,8 @@
+## 2.5.1
+
+##### Added
+- Added support for `double` typed `Traits` values.
+
 ## 2.5.0
 
 ##### Breaking
