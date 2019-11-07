@@ -138,7 +138,7 @@ public class AppboyTest  {
   }
 
   @Test
-  @Ignore
+ // @Ignore
   public void testIdentifyFields() {
     Traits traits = createTraits("userId");
     traits.putEmail("a@o.o");
@@ -150,12 +150,14 @@ public class AppboyTest  {
     address.putCity("city");
     address.putCountry("country");
     traits.putAddress(address);
+    traits.putAvatar("avatarUrl");
     traits.put("int", new Integer(10));
     traits.put("bool", new Boolean(true));
     traits.put("float", new Float(5.0));
     traits.put("long", new Long(15L));
     traits.put("string", "value");
     traits.put("unknown", new Object());
+
     IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     mIntegration.identify(identifyPayload);
     verify(mAppboyUser).setEmail("a@o.o");
@@ -165,6 +167,7 @@ public class AppboyTest  {
     verify(mAppboyUser).setPhoneNumber("5555551234");
     verify(mAppboyUser).setHomeCity("city");
     verify(mAppboyUser).setCountry("country");
+    verify(mAppboyUser).setAvatarImageUrl("avatarUrl");
     verify(mAppboyUser).setCustomUserAttribute("int", new Integer(10));
     verify(mAppboyUser).setCustomUserAttribute("bool", new Boolean(true));
     verify(mAppboyUser).setCustomUserAttribute("float", new Float(5.0));
@@ -172,7 +175,7 @@ public class AppboyTest  {
     verify(mAppboyUser).setCustomUserAttribute("string", "value");
     //verifyNoMoreAppboyUserInteractions();
     verify(mAppboy, Mockito.times(1)).changeUser("userId");
-    verify(mAppboy, Mockito.times(12)).getCurrentUser();
+    verify(mAppboy, Mockito.times(15)).getCurrentUser();
     //verifyNoMoreAppboyInteractions();
   }
 
