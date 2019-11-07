@@ -46,7 +46,7 @@ public class AppboyIntegration extends Integration<Appboy> {
   private static final String AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED =
           "automatic_in_app_message_registration_enabled";
   private static final List<String> RESERVED_KEYS = Arrays.asList("birthday", "email", "firstName",
-    "lastName", "gender", "phone", "address");
+    "lastName", "gender", "phone", "address", "avatar");
 
   public static final Factory FACTORY = factory(AppboyIntegrationOptions.builder().build());
 
@@ -204,6 +204,11 @@ public class AppboyIntegration extends Integration<Appboy> {
       if (!StringUtils.isNullOrBlank(country)) {
         mAppboy.getCurrentUser().setCountry(country);
       }
+    }
+
+    String avatarUrl = traits.avatar();
+    if (!StringUtils.isNullOrBlank(avatarUrl)) {
+      mAppboy.getCurrentUser().setAvatarImageUrl(avatarUrl);
     }
 
     for (String key : traits.keySet()) {
