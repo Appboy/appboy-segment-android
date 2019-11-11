@@ -2,6 +2,7 @@ package com.segment.analytics.android.integrations.appboy;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.appboy.Appboy;
 import com.appboy.configuration.AppboyConfig;
@@ -90,7 +91,9 @@ public class AppboyIntegration extends Integration<Appboy> {
   private final String mToken;
   private final Logger mLogger;
   private final boolean mAutomaticInAppMessageRegistrationEnabled;
+  @NonNull
   private final UserIdMapper mUserIdMapper;
+  @Nullable
   private final TraitsCache mTraitsCache;
 
   public AppboyIntegration(Context context, Appboy appboy, String token, Logger logger,
@@ -119,24 +122,16 @@ public class AppboyIntegration extends Integration<Appboy> {
     super.identify(identify);
 
     String userId = identify.userId();
-    if (!StringUtils.isNullOrBlank(userId)) {
+    String cachedUserId = mTraitsCache != null ? mTraitsCache.load().userId() : null;
+    if (!StringUtils.isNullOrBlank(userId) && !userId.equals(cachedUserId)) {
+      mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
 
-      String cachedUserId = mTraitsCache.load().userId();
-
-      if (!userId.equals(cachedUserId)) {
-        mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
-
-        if (mTraitsCache != null) {
-          mTraitsCache.clear();
-        }
+      if (mTraitsCache != null) {
+        mTraitsCache.clear();
       }
     }
 
     Traits traits = identify.traits();
-
-    if (traits == null) {
-      return;
-    }
 
     if (mTraitsCache != null) {
       Traits lastEmittedTraits = mTraitsCache.load();

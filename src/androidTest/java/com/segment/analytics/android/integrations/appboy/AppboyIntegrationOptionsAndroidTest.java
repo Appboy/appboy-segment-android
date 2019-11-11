@@ -119,6 +119,27 @@ public class AppboyIntegrationOptionsAndroidTest {
   }
 
   @Test
+  public void testShouldNotTriggerUpdateIfTraitDiffingDisabled() {
+    givenIntegrationWithOptions(AppboyIntegrationOptions.builder()
+        .enableTraitDiffing(false)
+        .build()
+    );
+    Traits traits = createTraits(USER_ID);
+    traits.putEmail(TRAIT_EMAIL);
+    callIdentifyWithTraits(traits);
+    callIdentifyWithTraits(traits);
+
+    Traits traitsUpdate = createTraits(USER_ID);
+    traitsUpdate.putEmail(TRAIT_EMAIL_UPDATED);
+    callIdentifyWithTraits(traitsUpdate);
+    callIdentifyWithTraits(traitsUpdate);
+
+    InOrder inOrder = Mockito.inOrder(appboyUser);
+    inOrder.verify(appboyUser, times(1)).setEmail(TRAIT_EMAIL);
+    inOrder.verify(appboyUser, times(1)).setEmail(TRAIT_EMAIL_UPDATED);
+  }
+
+  @Test
   public void testAvoidTriggeringRepeatedUserIdUpdates() {
     givenIntegrationWithOptions(AppboyIntegrationOptions.builder()
         .enableTraitDiffing(true)
