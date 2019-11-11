@@ -74,7 +74,7 @@ public class AppboyTest  {
     when(mAnalytics.logger("Appboy")).thenReturn(mLogger);
     when(mAnalytics.getApplication()).thenReturn(mContext);
     mIntegration = new AppboyIntegration(
-        mAppboy, "foo", mLogger, true, new InMemoryTraitsCache(), new DefaultUserIdMapper());
+        mContext, mAppboy, "foo", mLogger, true, true, null);
   }
 
   @Test
