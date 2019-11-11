@@ -1,7 +1,8 @@
 package com.segment.analytics.android.integrations.appboy;
 
 import android.app.Activity;
-
+import android.content.Context;
+import android.support.annotation.Nullable;
 import com.appboy.Appboy;
 import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.Gender;
@@ -19,10 +20,6 @@ import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
-
-import java.util.Map;
-import org.json.JSONObject;
-
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -30,7 +27,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import org.json.JSONObject;
 
 public class AppboyIntegration extends Integration<Appboy> {
   private static final String APPBOY_KEY = "Appboy";
@@ -73,20 +72,11 @@ public class AppboyIntegration extends Integration<Appboy> {
           builder.setCustomEndpoint(customEndpoint);
         }
 
-        UserIdMapper userIdMapper = options.getUserIdMapper();
-        if (userIdMapper == null) {
-          userIdMapper = new DefaultUserIdMapper();
-        }
-
-        TraitsCache traitsCache = null;
-        if (options.isTraitDiffingEnabled()) {
-          traitsCache = new PreferencesTraitsCache(analytics.getApplication());
-        }
-
         Appboy.configure(analytics.getApplication().getApplicationContext(), builder.build());
         Appboy appboy = Appboy.getInstance(analytics.getApplication());
         logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
-        return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled, traitsCache, userIdMapper);
+        return new AppboyIntegration(analytics.getApplication(), appboy, apiKey, logger, inAppMessageRegistrationEnabled,
+            options.isTraitDiffingEnabled(), options.getUserIdMapper());
       }
 
       @Override
@@ -103,16 +93,16 @@ public class AppboyIntegration extends Integration<Appboy> {
   private final UserIdMapper mUserIdMapper;
   private final TraitsCache mTraitsCache;
 
-  public AppboyIntegration(Appboy appboy, String token, Logger logger,
-                           boolean automaticInAppMessageRegistrationEnabled,
-                           TraitsCache traitsCache,
-                           UserIdMapper userIdMapper) {
+  public AppboyIntegration(Context context, Appboy appboy, String token, Logger logger,
+      boolean automaticInAppMessageRegistrationEnabled,
+      boolean enableTraitDiffing,
+      @Nullable UserIdMapper userIdMapper) {
     mAppboy = appboy;
     mToken = token;
     mLogger = logger;
     mAutomaticInAppMessageRegistrationEnabled = automaticInAppMessageRegistrationEnabled;
-    mUserIdMapper = userIdMapper;
-    mTraitsCache = traitsCache;
+    mUserIdMapper = userIdMapper != null ? userIdMapper : new DefaultUserIdMapper();
+    mTraitsCache = enableTraitDiffing ? new PreferencesTraitsCache(context) : null;
   }
 
   public String getToken() {

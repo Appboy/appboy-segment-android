@@ -20,6 +20,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import static android.support.test.InstrumentationRegistry.getContext;
+import static android.support.test.InstrumentationRegistry.getTargetContext;
 import static com.segment.analytics.Utils.createTraits;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -42,7 +43,6 @@ public class AppboyIntegrationOptionsAndroidTest {
   @Mock AppboyUser appboyUser;
 
   private AppboyIntegration appboyIntegration;
-  private PreferencesTraitsCache traitsCache;
 
   @BeforeClass
   public static void beforeClass() {
@@ -58,16 +58,11 @@ public class AppboyIntegrationOptionsAndroidTest {
 
     Logger logger = Logger.with(Analytics.LogLevel.DEBUG);
 
-    traitsCache = new PreferencesTraitsCache(getContext());
+    new PreferencesTraitsCache(getTargetContext()).clear();
 
-    appboyIntegration = new AppboyIntegration(
+    appboyIntegration = new AppboyIntegration(getTargetContext(),
         appboy, "foo", logger, true,
-        traitsCache, new ReplaceUserIdMapper());
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    traitsCache.clear();
+        true, new ReplaceUserIdMapper());
   }
 
   @Test
