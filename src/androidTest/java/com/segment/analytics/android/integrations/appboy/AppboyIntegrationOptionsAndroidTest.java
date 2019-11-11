@@ -6,10 +6,8 @@ import com.appboy.AppboyUser;
 import com.appboy.configuration.AppboyConfig;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Traits;
-import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.test.IdentifyPayloadBuilder;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,17 +54,16 @@ public class AppboyIntegrationOptionsAndroidTest {
 
     when(appboy.getCurrentUser()).thenReturn(appboyUser);
 
-    Logger logger = Logger.with(Analytics.LogLevel.DEBUG);
-
     new PreferencesTraitsCache(getTargetContext()).clear();
-
-    appboyIntegration = new AppboyIntegration(getTargetContext(),
-        appboy, "foo", logger, true,
-        true, new ReplaceUserIdMapper());
   }
 
   @Test
   public void testUserIdMapperTransformsAppboyUserId() {
+    givenIntegrationWithOptions(AppboyIntegrationOptions.builder()
+        .enableTraitDiffing(true)
+        .userIdMapper(new ReplaceUserIdMapper())
+        .build()
+    );
     Traits traits = createTraits(USER_ID);
 
     callIdentifyWithTraits(traits);
@@ -76,6 +73,10 @@ public class AppboyIntegrationOptionsAndroidTest {
 
   @Test
   public void testShouldNotTriggerAppboyUpdateIfTraitDoesntChange() {
+    givenIntegrationWithOptions(AppboyIntegrationOptions.builder()
+        .enableTraitDiffing(true)
+        .build()
+    );
     Traits traits = createTraits(USER_ID);
 
     Traits.Address address = new Traits.Address();
@@ -98,6 +99,10 @@ public class AppboyIntegrationOptionsAndroidTest {
 
   @Test
   public void testShouldTriggerUpdateIfTraitChanges() {
+    givenIntegrationWithOptions(AppboyIntegrationOptions.builder()
+        .enableTraitDiffing(true)
+        .build()
+    );
     Traits traits = createTraits(USER_ID);
     traits.putEmail(TRAIT_EMAIL);
     callIdentifyWithTraits(traits);
@@ -115,6 +120,11 @@ public class AppboyIntegrationOptionsAndroidTest {
 
   @Test
   public void testAvoidTriggeringRepeatedUserIdUpdates() {
+    givenIntegrationWithOptions(AppboyIntegrationOptions.builder()
+        .enableTraitDiffing(true)
+        .userIdMapper(new ReplaceUserIdMapper())
+        .build()
+    );
     Traits traits = createTraits(USER_ID);
     traits.putEmail(TRAIT_EMAIL);
 
@@ -127,6 +137,10 @@ public class AppboyIntegrationOptionsAndroidTest {
 
   @Test
   public void clearCacheIfUserIdChanges() {
+    givenIntegrationWithOptions(AppboyIntegrationOptions.builder()
+        .enableTraitDiffing(true)
+        .build()
+    );
     Traits traits = createTraits(USER_ID);
     traits.putEmail(TRAIT_EMAIL);
 
@@ -141,6 +155,10 @@ public class AppboyIntegrationOptionsAndroidTest {
 
   @Test
   public void clearCacheOnReset() {
+    givenIntegrationWithOptions(AppboyIntegrationOptions.builder()
+        .enableTraitDiffing(true)
+        .build()
+    );
     Traits traits = createTraits(USER_ID);
     traits.putEmail(TRAIT_EMAIL);
 
@@ -153,10 +171,18 @@ public class AppboyIntegrationOptionsAndroidTest {
     verify(appboyUser, times(2)).setEmail(TRAIT_EMAIL);
   }
 
-  public void callIdentifyWithTraits(Traits traits) {
-    IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+  private void givenIntegrationWithOptions(AppboyIntegrationOptions options) {
+    appboyIntegration = new AppboyIntegration(getTargetContext(), appboy,
+        "foo",
+        Logger.with(Analytics.LogLevel.DEBUG),
+        true,
+        options.isTraitDiffingEnabled(),
+        options.getUserIdMapper()
+    );
+  }
 
-    appboyIntegration.identify(identifyPayload);
+  private void callIdentifyWithTraits(Traits traits) {
+    appboyIntegration.identify(new IdentifyPayloadBuilder().traits(traits).build());
   }
 
   class ReplaceUserIdMapper implements UserIdMapper {
