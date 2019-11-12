@@ -34,8 +34,11 @@ public class AppboyIntegrationOptionsAndroidTest {
   private static final String TRAIT_EMAIL_UPDATED = "updated@segment.com";
   private static final String TRAIT_CITY = "city";
   private static final String TRAIT_COUNTRY = "country";
-  private static final String CUSTOM_TRAIT_KEY = "custom_trait_key";
-  private static final String CUSTOM_KEY_VALUE = "custom_key_value";
+  private static final String CUSTOM_TRAIT_STRING_KEY = "key_string";
+  private static final String CUSTOM_TRAIT_STRING_VALUE = "value_string";
+  private static final String CUSTOM_TRAIT_INT_KEY = "key_int";
+  private static final String CUSTOM_TRAIT_DOUBLE_KEY = "key_double";
+  private static final int CUSTOM_TRAIT_INT_VALUE = 42;
 
   @Mock Appboy appboy;
   @Mock AppboyUser appboyUser;
@@ -85,7 +88,9 @@ public class AppboyIntegrationOptionsAndroidTest {
 
     traits.putAddress(address);
     traits.putEmail(TRAIT_EMAIL);
-    traits.put(CUSTOM_TRAIT_KEY, CUSTOM_KEY_VALUE);
+    traits.put(CUSTOM_TRAIT_STRING_KEY, CUSTOM_TRAIT_STRING_VALUE);
+    traits.put(CUSTOM_TRAIT_INT_KEY, CUSTOM_TRAIT_INT_VALUE);
+    traits.put(CUSTOM_TRAIT_DOUBLE_KEY, CUSTOM_TRAIT_DOUBLE_KEY);
 
     callIdentifyWithTraits(traits);
     callIdentifyWithTraits(traits);
@@ -94,7 +99,9 @@ public class AppboyIntegrationOptionsAndroidTest {
     verify(appboyUser, times(1)).setEmail(TRAIT_EMAIL);
     verify(appboyUser, times(1)).setHomeCity(TRAIT_CITY);
     verify(appboyUser, times(1)).setCountry(TRAIT_COUNTRY);
-    verify(appboyUser, times(1)).setCustomUserAttribute(CUSTOM_TRAIT_KEY, CUSTOM_KEY_VALUE);
+    verify(appboyUser, times(1)).setCustomUserAttribute(CUSTOM_TRAIT_STRING_KEY, CUSTOM_TRAIT_STRING_VALUE);
+    verify(appboyUser, times(1)).setCustomUserAttribute(CUSTOM_TRAIT_INT_KEY, CUSTOM_TRAIT_INT_VALUE);
+    verify(appboyUser, times(1)).setCustomUserAttribute(CUSTOM_TRAIT_DOUBLE_KEY, CUSTOM_TRAIT_DOUBLE_KEY);
   }
 
   @Test
