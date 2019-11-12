@@ -1,3 +1,14 @@
+## 2.5.1
+
+##### Added
+- Added support for `double` typed `Traits` values.
+
+## 2.5.0
+
+##### Breaking
+- Updated to [Braze Android SDK 3.7.1](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#371).
+- Removed the Feedback feature.
+
 ## 2.4.1
 
 ##### Fixed

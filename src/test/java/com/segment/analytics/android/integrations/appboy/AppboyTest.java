@@ -153,6 +153,7 @@ public class AppboyTest  {
     traits.putAvatar("avatarUrl");
     traits.put("int", new Integer(10));
     traits.put("bool", new Boolean(true));
+    traits.put("double", new Double(4.2));
     traits.put("float", new Float(5.0));
     traits.put("long", new Long(15L));
     traits.put("string", "value");
@@ -170,6 +171,7 @@ public class AppboyTest  {
     verify(mAppboyUser).setAvatarImageUrl("avatarUrl");
     verify(mAppboyUser).setCustomUserAttribute("int", new Integer(10));
     verify(mAppboyUser).setCustomUserAttribute("bool", new Boolean(true));
+    verify(mAppboyUser).setCustomUserAttribute("double", new Double(4.2));
     verify(mAppboyUser).setCustomUserAttribute("float", new Float(5.0));
     verify(mAppboyUser).setCustomUserAttribute("long", new Long(15L));
     verify(mAppboyUser).setCustomUserAttribute("string", "value");
