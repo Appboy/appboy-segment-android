@@ -232,12 +232,27 @@ public class AppboyIntegration extends Integration<Appboy> {
     for (Map.Entry<String, Object> trait : traits.entrySet()) {
       Object storedValue = lastEmittedTraits.get(trait.getKey());
 
-      if (storedValue == null || !trait.getValue().equals(storedValue)) {
-        diffed.put(trait.getKey(), trait.getValue());
+      if (storedValue != null) {
+        boolean areEqual = trait.getValue().equals(storedValue) || haveSameNumberValue(trait.getValue(), storedValue);
+        if (areEqual) {
+          continue;
+        }
       }
+
+      diffed.put(trait.getKey(), trait.getValue());
     }
 
     return diffed;
+  }
+
+  private boolean haveSameNumberValue(Object o1, Object o2) {
+    if (o1 instanceof Number && o2 instanceof Number) {
+      Number n1 = (Number) o1;
+      Number n2 = (Number) o2;
+      return n1.doubleValue() == n2.doubleValue();
+    } else {
+      return false;
+    }
   }
 
   @Override
