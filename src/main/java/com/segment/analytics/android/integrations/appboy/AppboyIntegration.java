@@ -125,6 +125,7 @@ public class AppboyIntegration extends Integration<Appboy> {
     String userId = identify.userId();
     String cachedUserId = mTraitsCache != null ? mTraitsCache.load().userId() : null;
     if (!StringUtils.isNullOrBlank(userId) && !userId.equals(cachedUserId)) {
+      mLogger.debug("User ID changed. Old=" + cachedUserId + " New=" + userId);
       mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
 
       if (mTraitsCache != null) {
