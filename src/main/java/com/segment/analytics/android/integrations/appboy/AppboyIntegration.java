@@ -5,6 +5,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.appboy.Appboy;
+import com.appboy.AppboyUser;
 import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
@@ -124,6 +125,7 @@ public class AppboyIntegration extends Integration<Appboy> {
     String userId = identify.userId();
     String cachedUserId = mTraitsCache != null ? mTraitsCache.load().userId() : null;
     if (!StringUtils.isNullOrBlank(userId) && !userId.equals(cachedUserId)) {
+      mLogger.debug("User ID changed. Old=" + cachedUserId + " New=" + userId);
       mAppboy.changeUser(mUserIdMapper.transformUserId(userId));
 
       if (mTraitsCache != null) {
@@ -141,59 +143,65 @@ public class AppboyIntegration extends Integration<Appboy> {
       traits = diffTraits(traits, lastEmittedTraits);
     }
 
+    AppboyUser currentUser = mAppboy.getCurrentUser();
+    if (currentUser == null) {
+      mLogger.info("Appboy.getCurrentUser() was null, aborting identify");
+      return;
+    }
+
     Date birthday = traits.birthday();
     if (birthday != null) {
       Calendar birthdayCal = Calendar.getInstance(Locale.US);
       birthdayCal.setTime(birthday);
-      mAppboy.getCurrentUser().setDateOfBirth(birthdayCal.get(Calendar.YEAR),
+      currentUser.setDateOfBirth(birthdayCal.get(Calendar.YEAR),
           Month.values()[birthdayCal.get(Calendar.MONTH)],
           birthdayCal.get(Calendar.DAY_OF_MONTH));
     }
 
     String email = traits.email();
     if (!StringUtils.isNullOrBlank(email)) {
-      mAppboy.getCurrentUser().setEmail(email);
+      currentUser.setEmail(email);
     }
 
     String firstName = traits.firstName();
     if (!StringUtils.isNullOrBlank(firstName)) {
-      mAppboy.getCurrentUser().setFirstName(firstName);
+      currentUser.setFirstName(firstName);
     }
 
     String lastName = traits.lastName();
     if (!StringUtils.isNullOrBlank(lastName)) {
-      mAppboy.getCurrentUser().setLastName(lastName);
+      currentUser.setLastName(lastName);
     }
 
     String gender = traits.gender();
     if (!StringUtils.isNullOrBlank(gender)) {
       if (MALE_TOKENS.contains(gender.toUpperCase())) {
-        mAppboy.getCurrentUser().setGender(Gender.MALE);
+        currentUser.setGender(Gender.MALE);
       } else if (FEMALE_TOKENS.contains(gender.toUpperCase())) {
-        mAppboy.getCurrentUser().setGender(Gender.FEMALE);
+        currentUser.setGender(Gender.FEMALE);
       }
     }
 
     String phone = traits.phone();
     if (!StringUtils.isNullOrBlank(phone)) {
-      mAppboy.getCurrentUser().setPhoneNumber(phone);
+      currentUser.setPhoneNumber(phone);
     }
 
     Traits.Address address = traits.address();
     if (address != null) {
       String city = address.city();
       if (!StringUtils.isNullOrBlank(city)) {
-        mAppboy.getCurrentUser().setHomeCity(city);
+        currentUser.setHomeCity(city);
       }
       String country = address.country();
       if (!StringUtils.isNullOrBlank(country)) {
-        mAppboy.getCurrentUser().setCountry(country);
+        currentUser.setCountry(country);
       }
     }
 
     String avatarUrl = traits.avatar();
     if (!StringUtils.isNullOrBlank(avatarUrl)) {
-      mAppboy.getCurrentUser().setAvatarImageUrl(avatarUrl);
+      currentUser.setAvatarImageUrl(avatarUrl);
     }
 
     for (String key : traits.keySet()) {
@@ -203,20 +211,20 @@ public class AppboyIntegration extends Integration<Appboy> {
       }
       Object value = traits.get(key);
       if (value instanceof Boolean) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Boolean) value);
+        currentUser.setCustomUserAttribute(key, (Boolean) value);
       } else if (value instanceof Integer) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Integer) value);
+        currentUser.setCustomUserAttribute(key, (Integer) value);
       } else if (value instanceof Double) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Double) value);
+        currentUser.setCustomUserAttribute(key, (Double) value);
       } else if (value instanceof Float) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Float) value);
+        currentUser.setCustomUserAttribute(key, (Float) value);
       } else if (value instanceof Long) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Long) value);
+        currentUser.setCustomUserAttribute(key, (Long) value);
       } else if (value instanceof Date) {
         long secondsFromEpoch = ((Date) value).getTime() / 1000L;
-        mAppboy.getCurrentUser().setCustomUserAttributeToSecondsFromEpoch(key, secondsFromEpoch);
+        currentUser.setCustomUserAttributeToSecondsFromEpoch(key, secondsFromEpoch);
       } else if (value instanceof String) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (String) value);
+        currentUser.setCustomUserAttribute(key, (String) value);
       } else {
         mLogger.info("Appboy can't map segment value for custom Appboy user "
             + "attribute with key %s and value %s", key, value);
@@ -298,22 +306,22 @@ public class AppboyIntegration extends Integration<Appboy> {
     double revenue = properties.revenue();
     if (revenue != 0) {
       String currencyCode = StringUtils.isNullOrBlank(properties.currency()) ? DEFAULT_CURRENCY_CODE
-        : properties.currency();
+          : properties.currency();
       propertiesJson.remove(REVENUE_KEY);
       propertiesJson.remove(CURRENCY_KEY);
       if (propertiesJson.length() == 0) {
         mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"
-          + " properties.", event, revenue, currencyCode);
+            + " properties.", event, revenue, currencyCode);
         mAppboy.logPurchase(event, currencyCode, new BigDecimal(revenue));
       } else {
         mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
             + " %s.", event, revenue, currencyCode, propertiesJson.toString());
         mAppboy.logPurchase(event, currencyCode, new BigDecimal(revenue),
-          new AppboyProperties(propertiesJson));
+            new AppboyProperties(propertiesJson));
       }
     } else {
       mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
-        event, propertiesJson.toString());
+          event, propertiesJson.toString());
       mAppboy.logCustomEvent(event, new AppboyProperties(propertiesJson));
     }
   }
