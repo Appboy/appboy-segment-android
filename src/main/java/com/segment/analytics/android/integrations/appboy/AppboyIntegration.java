@@ -133,14 +133,13 @@ public class AppboyIntegration extends Integration<Appboy> {
       }
     }
 
-    Traits traits = identify.traits();
-
+    Traits originalTraits = identify.traits();
+    Traits diffedTraits;
     if (mTraitsCache != null) {
       Traits lastEmittedTraits = mTraitsCache.load();
-
-      mTraitsCache.save(traits);
-
-      traits = diffTraits(traits, lastEmittedTraits);
+      diffedTraits = diffTraits(originalTraits, lastEmittedTraits);
+    } else {
+      diffedTraits = originalTraits;
     }
 
     AppboyUser currentUser = mAppboy.getCurrentUser();
@@ -149,7 +148,7 @@ public class AppboyIntegration extends Integration<Appboy> {
       return;
     }
 
-    Date birthday = traits.birthday();
+    Date birthday = diffedTraits.birthday();
     if (birthday != null) {
       Calendar birthdayCal = Calendar.getInstance(Locale.US);
       birthdayCal.setTime(birthday);
@@ -158,22 +157,22 @@ public class AppboyIntegration extends Integration<Appboy> {
           birthdayCal.get(Calendar.DAY_OF_MONTH));
     }
 
-    String email = traits.email();
+    String email = diffedTraits.email();
     if (!StringUtils.isNullOrBlank(email)) {
       currentUser.setEmail(email);
     }
 
-    String firstName = traits.firstName();
+    String firstName = diffedTraits.firstName();
     if (!StringUtils.isNullOrBlank(firstName)) {
       currentUser.setFirstName(firstName);
     }
 
-    String lastName = traits.lastName();
+    String lastName = diffedTraits.lastName();
     if (!StringUtils.isNullOrBlank(lastName)) {
       currentUser.setLastName(lastName);
     }
 
-    String gender = traits.gender();
+    String gender = diffedTraits.gender();
     if (!StringUtils.isNullOrBlank(gender)) {
       if (MALE_TOKENS.contains(gender.toUpperCase())) {
         currentUser.setGender(Gender.MALE);
@@ -182,12 +181,12 @@ public class AppboyIntegration extends Integration<Appboy> {
       }
     }
 
-    String phone = traits.phone();
+    String phone = diffedTraits.phone();
     if (!StringUtils.isNullOrBlank(phone)) {
       currentUser.setPhoneNumber(phone);
     }
 
-    Traits.Address address = traits.address();
+    Traits.Address address = diffedTraits.address();
     if (address != null) {
       String city = address.city();
       if (!StringUtils.isNullOrBlank(city)) {
@@ -199,17 +198,17 @@ public class AppboyIntegration extends Integration<Appboy> {
       }
     }
 
-    String avatarUrl = traits.avatar();
+    String avatarUrl = diffedTraits.avatar();
     if (!StringUtils.isNullOrBlank(avatarUrl)) {
       currentUser.setAvatarImageUrl(avatarUrl);
     }
 
-    for (String key : traits.keySet()) {
+    for (String key : diffedTraits.keySet()) {
       if (RESERVED_KEYS.contains(key)) {
         mLogger.debug("Skipping reserved key %s", key);
         continue;
       }
-      Object value = traits.get(key);
+      Object value = diffedTraits.get(key);
       if (value instanceof Boolean) {
         currentUser.setCustomUserAttribute(key, (Boolean) value);
       } else if (value instanceof Integer) {
@@ -229,6 +228,10 @@ public class AppboyIntegration extends Integration<Appboy> {
         mLogger.info("Appboy can't map segment value for custom Appboy user "
             + "attribute with key %s and value %s", key, value);
       }
+    }
+
+    if (mTraitsCache != null) {
+      mTraitsCache.save(originalTraits);
     }
   }
 
