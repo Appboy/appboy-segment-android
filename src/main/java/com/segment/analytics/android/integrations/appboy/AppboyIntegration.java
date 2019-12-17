@@ -133,6 +133,12 @@ public class AppboyIntegration extends Integration<Appboy> {
       }
     }
 
+    AppboyUser currentUser = mAppboy.getCurrentUser();
+    if (currentUser == null) {
+      mLogger.info("Appboy.getCurrentUser() was null, aborting identify");
+      return;
+    }
+
     Traits originalTraits = identify.traits();
     Traits diffedTraits;
     if (mTraitsCache != null) {
@@ -140,12 +146,6 @@ public class AppboyIntegration extends Integration<Appboy> {
       diffedTraits = diffTraits(originalTraits, lastEmittedTraits);
     } else {
       diffedTraits = originalTraits;
-    }
-
-    AppboyUser currentUser = mAppboy.getCurrentUser();
-    if (currentUser == null) {
-      mLogger.info("Appboy.getCurrentUser() was null, aborting identify");
-      return;
     }
 
     Date birthday = diffedTraits.birthday();
