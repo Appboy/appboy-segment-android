@@ -3,6 +3,7 @@ package com.segment.analytics.android.integrations.appboy;
 import android.app.Activity;
 
 import com.appboy.Appboy;
+import com.appboy.AppboyUser;
 import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
@@ -116,53 +117,59 @@ public class AppboyIntegration extends Integration<Appboy> {
       return;
     }
 
+    AppboyUser currentUser = mAppboy.getCurrentUser();
+    if (currentUser == null) {
+      mLogger.info("Appboy.getCurrentUser() was null, aborting identify");
+      return;
+    }
+
     Date birthday = traits.birthday();
     if (birthday != null) {
       Calendar birthdayCal = Calendar.getInstance(Locale.US);
       birthdayCal.setTime(birthday);
-      mAppboy.getCurrentUser().setDateOfBirth(birthdayCal.get(Calendar.YEAR),
+      currentUser.setDateOfBirth(birthdayCal.get(Calendar.YEAR),
           Month.values()[birthdayCal.get(Calendar.MONTH)],
           birthdayCal.get(Calendar.DAY_OF_MONTH));
     }
 
     String email = traits.email();
     if (!StringUtils.isNullOrBlank(email)) {
-      mAppboy.getCurrentUser().setEmail(email);
+      currentUser.setEmail(email);
     }
 
     String firstName = traits.firstName();
     if (!StringUtils.isNullOrBlank(firstName)) {
-      mAppboy.getCurrentUser().setFirstName(firstName);
+      currentUser.setFirstName(firstName);
     }
 
     String lastName = traits.lastName();
     if (!StringUtils.isNullOrBlank(lastName)) {
-      mAppboy.getCurrentUser().setLastName(lastName);
+      currentUser.setLastName(lastName);
     }
 
     String gender = traits.gender();
     if (!StringUtils.isNullOrBlank(gender)) {
       if (MALE_TOKENS.contains(gender.toUpperCase())) {
-        mAppboy.getCurrentUser().setGender(Gender.MALE);
+        currentUser.setGender(Gender.MALE);
       } else if (FEMALE_TOKENS.contains(gender.toUpperCase())) {
-        mAppboy.getCurrentUser().setGender(Gender.FEMALE);
+        currentUser.setGender(Gender.FEMALE);
       }
     }
 
     String phone = traits.phone();
     if (!StringUtils.isNullOrBlank(phone)) {
-      mAppboy.getCurrentUser().setPhoneNumber(phone);
+      currentUser.setPhoneNumber(phone);
     }
 
     Traits.Address address = traits.address();
     if (address != null) {
       String city = address.city();
       if (!StringUtils.isNullOrBlank(city)) {
-        mAppboy.getCurrentUser().setHomeCity(city);
+        currentUser.setHomeCity(city);
       }
       String country = address.country();
       if (!StringUtils.isNullOrBlank(country)) {
-        mAppboy.getCurrentUser().setCountry(country);
+        currentUser.setCountry(country);
       }
     }
 
@@ -173,20 +180,20 @@ public class AppboyIntegration extends Integration<Appboy> {
       }
       Object value = traits.get(key);
       if (value instanceof Boolean) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Boolean) value);
+        currentUser.setCustomUserAttribute(key, (Boolean) value);
       } else if (value instanceof Integer) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Integer) value);
+        currentUser.setCustomUserAttribute(key, (Integer) value);
       } else if (value instanceof Double) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Double) value);
+        currentUser.setCustomUserAttribute(key, (Double) value);
       } else if (value instanceof Float) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Float) value);
+        currentUser.setCustomUserAttribute(key, (Float) value);
       } else if (value instanceof Long) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (Long) value);
+        currentUser.setCustomUserAttribute(key, (Long) value);
       } else if (value instanceof Date) {
         long secondsFromEpoch = ((Date) value).getTime() / 1000L;
-        mAppboy.getCurrentUser().setCustomUserAttributeToSecondsFromEpoch(key, secondsFromEpoch);
+        currentUser.setCustomUserAttributeToSecondsFromEpoch(key, secondsFromEpoch);
       } else if (value instanceof String) {
-        mAppboy.getCurrentUser().setCustomUserAttribute(key, (String) value);
+        currentUser.setCustomUserAttribute(key, (String) value);
       } else {
         mLogger.info("Appboy can't map segment value for custom Appboy user "
           + "attribute with key %s and value %s", key, value);
@@ -215,8 +222,9 @@ public class AppboyIntegration extends Integration<Appboy> {
     try {
       if (event.equals("Install Attributed")) {
         Properties campaignProps = (Properties) properties.get("campaign");
-        if (campaignProps != null) {
-          mAppboy.getCurrentUser().setAttributionData(new AttributionData(
+        AppboyUser currentUser = mAppboy.getCurrentUser();
+        if (campaignProps != null && currentUser != null) {
+          currentUser.setAttributionData(new AttributionData(
               campaignProps.getString("source"),
               campaignProps.getString("name"),
               campaignProps.getString("ad_group"),

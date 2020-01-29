@@ -1,3 +1,8 @@
+## 2.5.2
+
+##### Fixed
+- Fixed potential for null pointer exception in the `identify()` method resulting from a null value for `Appboy.getCurrentUser()`.
+
 ## 2.5.1
 
 ##### Added
