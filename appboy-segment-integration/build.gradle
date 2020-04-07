@@ -15,14 +15,14 @@ apply plugin: 'checkstyle'
 apply plugin: 'maven-publish'
 
 android {
-  compileSdkVersion 28
-  buildToolsVersion '28.0.3'
+  compileSdkVersion 29
+  buildToolsVersion '29.0.0'
 
   defaultConfig {
     // Segment.io supports down to api 14:  https://segment.com/docs/libraries/android/
     // The Braze SDK supports down to api 16
     minSdkVersion 16
-    targetSdkVersion 28
+    targetSdkVersion 29
 
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
   }
@@ -51,7 +51,7 @@ dependencies {
 
   compileOnly 'com.segment.analytics.android:analytics:4.3.1'
 
-  api 'com.appboy:android-sdk-ui:3.7.1'
+  api 'com.appboy:android-sdk-ui:6.0.0'
 
   testImplementation 'junit:junit:4.12'
   testImplementation('org.robolectric:robolectric:3.0') {
@@ -75,7 +75,10 @@ dependencies {
   androidTestImplementation 'junit:junit:4.12'
 }
 
-version = '2.5.2'
+// Grabs the first line of the changelog to get the current version. Expects the line to start with Markdown syntax
+// (ex: ## major.minor.build)
+new File("../public/CHANGELOG.md").withReader { version = it.readLine().substring(3) }
+logger.lifecycle("Setting version to last recorded version in CHANGELOG.md: " + version)
 
 publishing {
   publications {
@@ -163,7 +166,7 @@ task javadocRelease(type: Javadoc) {
   destinationDir = file("build/outputs/javadoc/")
 }
 
-if (project.hasProperty("signing.keyId")) {
+if (project.hasProperty("signing.keyId") && enableSigning.toBoolean()) {
   apply plugin: 'signing'
   signing {
     sign configurations.archives

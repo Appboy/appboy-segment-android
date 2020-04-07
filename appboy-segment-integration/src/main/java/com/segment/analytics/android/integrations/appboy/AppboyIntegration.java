@@ -221,7 +221,7 @@ public class AppboyIntegration extends Integration<Appboy> {
     Properties properties = track.properties();
     try {
       if (event.equals("Install Attributed")) {
-        Properties campaignProps = (Properties) properties.get("campaign");
+        ValueMap campaignProps = (ValueMap) properties.get("campaign");
         AppboyUser currentUser = mAppboy.getCurrentUser();
         if (campaignProps != null && currentUser != null) {
           currentUser.setAttributionData(new AttributionData(

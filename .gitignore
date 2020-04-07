@@ -120,7 +120,6 @@ $RECYCLE.BIN/
 # Icon must end with two \r
 Icon
 
-
 # Thumbnails
 ._*
 
@@ -149,3 +148,7 @@ build/
 
 # Ignore Gradle GUI config
 gradle-app.setting
+
+# VSCode
+.classpath
+.project

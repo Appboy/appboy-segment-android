@@ -1,3 +1,14 @@
+## 3.0.0
+
+##### Breaking
+- Updated to [Braze Android SDK 6.0.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#600).
+
+##### Changed
+- The `campaign` property value is now casted to `ValueMap` instead of its `Properties` subclass.
+  - See https://github.com/Appboy/appboy-segment-android/pull/19. Thanks @ciaranmul!
+- The `appboy-sample` sample app is now located within this repo instead of a separate standalone repo.
+- The SDK code has been moved into a directory called `appboy-segment-integration`.
+
 ## 2.5.2
 
 ##### Fixed
