@@ -74,7 +74,7 @@ public class AppboyTest  {
     when(mAnalytics.logger("Appboy")).thenReturn(mLogger);
     when(mAnalytics.getApplication()).thenReturn(mContext);
     mIntegration = new AppboyIntegration(
-        mContext, mAppboy, "foo", mLogger, true, true, null);
+        mContext, mAppboy, "foo", mLogger, true, false, null);
   }
 
   @Test
@@ -177,7 +177,6 @@ public class AppboyTest  {
     verify(mAppboyUser).setCustomUserAttribute("string", "value");
     //verifyNoMoreAppboyUserInteractions();
     verify(mAppboy, Mockito.times(1)).changeUser("userId");
-    verify(mAppboy, Mockito.times(15)).getCurrentUser();
     //verifyNoMoreAppboyInteractions();
   }
 
@@ -220,7 +219,7 @@ public class AppboyTest  {
     traits.putGender("female_1");
     identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     mIntegration.identify(identifyPayload);
-    verify(mAppboy, Mockito.times(1)).changeUser("userId");
+    verify(mAppboy, Mockito.times(2)).changeUser("userId");
     //verifyNoMoreAppboyUserInteractions();
     //verifyNoMoreAppboyInteractions();
   }
