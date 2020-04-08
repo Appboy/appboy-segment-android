@@ -300,33 +300,45 @@ public class AppboyIntegration extends Integration<Appboy> {
       mLogger.verbose("This Install Attributed event is not in the proper format and cannot be"
           + " logged. The exception is %s.", exception);
     }
+
     if (properties == null || properties.size() == 0) {
       mLogger.verbose("Calling appboy.logCustomEvent for event %s with no properties.", event);
       mAppboy.logCustomEvent(event);
       return;
     }
-    JSONObject propertiesJson = properties.toJsonObject();
-    double revenue = properties.revenue();
-    if (revenue != 0) {
-      String currencyCode = StringUtils.isNullOrBlank(properties.currency()) ? DEFAULT_CURRENCY_CODE
-          : properties.currency();
-      propertiesJson.remove(REVENUE_KEY);
-      propertiesJson.remove(CURRENCY_KEY);
-      if (propertiesJson.length() == 0) {
-        mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"
-            + " properties.", event, revenue, currencyCode);
-        mAppboy.logPurchase(event, currencyCode, new BigDecimal(revenue));
-      } else {
-        mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
-            + " %s.", event, revenue, currencyCode, propertiesJson.toString());
-        mAppboy.logPurchase(event, currencyCode, new BigDecimal(revenue),
-            new AppboyProperties(propertiesJson));
+
+    if (event.equals("Order Completed")) {
+      String currency = properties.currency();
+
+      for (Properties.Product product : properties.products()) {
+        String productId = product.id();
+        BigDecimal price = BigDecimal.valueOf(product.price());
+
+        JSONObject productProperties = product.toJsonObject();
+        productProperties.remove("id");
+        productProperties.remove("price");
+
+        AppboyProperties appboyProperties = new AppboyProperties(productProperties);
+
+        if (appboyProperties.size() > 0) {
+          mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
+              + " %s.", event, price, currency, productProperties.toString());
+          mAppboy.logPurchase(productId, currency, price, appboyProperties);
+        } else {
+          mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"
+              + " properties.", event, price, currency);
+          mAppboy.logPurchase(productId, currency, price);
+        }
       }
-    } else {
-      mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
-          event, propertiesJson.toString());
-      mAppboy.logCustomEvent(event, new AppboyProperties(propertiesJson));
+
+      return;
     }
+
+    JSONObject propertiesJson = properties.toJsonObject();
+
+    mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
+        event, propertiesJson.toString());
+    mAppboy.logCustomEvent(event, new AppboyProperties(propertiesJson));
   }
 
   @Override
