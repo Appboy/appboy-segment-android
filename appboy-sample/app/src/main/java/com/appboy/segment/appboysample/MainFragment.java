@@ -14,7 +14,9 @@ import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 public class MainFragment extends Fragment {
@@ -105,6 +107,12 @@ public class MainFragment extends Fragment {
                 .putValue("content", "Organic Content Title")
                 .putValue("ad_creative", "Red Hello World Ad")
                 .putValue("ad_group", "Red Ones")));
+
+        // Log multiple products
+        Properties.Product[] products = new Properties.Product[2];
+        products[0] = new Properties.Product("id1", "sku1", 1.00d);
+        products[1] = new Properties.Product("id2", "sku2", 2.00d);
+        Analytics.with(getContext()).track("another_purchase", new Properties().putProducts(products));
       }
     });
     return view;

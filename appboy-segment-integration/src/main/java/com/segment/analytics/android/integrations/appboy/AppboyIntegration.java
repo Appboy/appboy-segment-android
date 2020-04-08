@@ -1,6 +1,8 @@
 package com.segment.analytics.android.integrations.appboy;
 
 import android.app.Activity;
+import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 
 import com.appboy.Appboy;
 import com.appboy.AppboyUser;
@@ -216,6 +218,7 @@ public class AppboyIntegration extends Integration<Appboy> {
     }
     String event = track.event();
     if (event == null) {
+      mLogger.verbose("The tracked event is null. Not running rest of track.");
       return;
     }
     Properties properties = track.properties();
@@ -243,20 +246,18 @@ public class AppboyIntegration extends Integration<Appboy> {
     }
     JSONObject propertiesJson = properties.toJsonObject();
     double revenue = properties.revenue();
-    if (revenue != 0) {
+    if (revenue != 0 || properties.products() != null) {
       String currencyCode = StringUtils.isNullOrBlank(properties.currency()) ? DEFAULT_CURRENCY_CODE
         : properties.currency();
       propertiesJson.remove(REVENUE_KEY);
       propertiesJson.remove(CURRENCY_KEY);
-      if (propertiesJson.length() == 0) {
-        mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"
-          + " properties.", event, revenue, currencyCode);
-        mAppboy.logPurchase(event, currencyCode, new BigDecimal(revenue));
+
+      if (properties.products() != null) {
+        for (Properties.Product product : properties.products()) {
+          logPurchaseForSingleItem(product.id(), currencyCode, new BigDecimal(product.price()), propertiesJson);
+        }
       } else {
-        mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
-            + " %s.", event, revenue, currencyCode, propertiesJson.toString());
-        mAppboy.logPurchase(event, currencyCode, new BigDecimal(revenue),
-          new AppboyProperties(propertiesJson));
+        logPurchaseForSingleItem(event, currencyCode, new BigDecimal(revenue), propertiesJson);
       }
     } else {
       mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
@@ -290,6 +291,22 @@ public class AppboyIntegration extends Integration<Appboy> {
     super.onActivityPaused(activity);
     if (mAutomaticInAppMessageRegistrationEnabled) {
       AppboyInAppMessageManager.getInstance().unregisterInAppMessageManager(activity);
+    }
+  }
+
+  @VisibleForTesting
+  void logPurchaseForSingleItem(String productId,
+                                        String currencyCode,
+                                        BigDecimal price,
+                                        @Nullable JSONObject propertiesJson) {
+    if (propertiesJson == null || propertiesJson.length() == 0) {
+      mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"
+          + " properties.", productId, price, currencyCode);
+      mAppboy.logPurchase(productId, currencyCode, price);
+    } else {
+      mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
+          + " %s.", productId, price, currencyCode, propertiesJson.toString());
+      mAppboy.logPurchase(productId, currencyCode, price, new AppboyProperties(propertiesJson));
     }
   }
 }

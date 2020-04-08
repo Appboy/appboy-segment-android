@@ -1,3 +1,11 @@
+## 4.0.0
+
+##### Breaking
+- Log separate purchases for each `product` in the `products` array in a `track` call.
+  - In the past we always used the event name as the Braze product ID.
+  - Now if a track call has the event name `Order Completed` or key `revenue` included in `properties` and has a `products` array, we will log each object in the array as a separate purchase using `productId` as the Braze product ID. `price` and `quantity` will be read from the individual array if available and all non-Braze recognized fields from the high level `properties` and each individual array will be combined and sent as event properties.
+  - If there is no `products` array we will continue using the event name as the Braze product ID if the key `revenue` is included in `properties`.
+
 ## 3.0.0
 
 ##### Breaking

@@ -8,6 +8,7 @@ import com.appboy.Appboy;
 import com.appboy.AppboyUser;
 import com.appboy.Constants;
 import com.appboy.enums.Gender;
+import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
@@ -20,10 +21,13 @@ import com.segment.analytics.test.IdentifyPayloadBuilder;
 import com.segment.analytics.test.ScreenPayloadBuilder;
 import com.segment.analytics.test.TrackPayloadBuilder;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.Mock;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
@@ -270,6 +274,45 @@ public class AppboyTest  {
   @Test
   public void testResetHasNoInteractionWithAppboy() {
     mIntegration.reset();
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void whenProvidedArrayOfProducts_logPurchase_calledForEachPurchase() {
+    Properties.Product[] products = new Properties.Product[2];
+    products[0] = new Properties.Product("id1", "sku1", 1.00d);
+    products[1] = new Properties.Product("id2", "sku2", 2.00d);
+    Properties purchaseProperties = new Properties();
+    purchaseProperties.putProducts(products);
+
+    final TrackPayload trackPayload = new TrackPayload.Builder()
+        .userId("u")
+        .event("Order Completed")
+        .properties(purchaseProperties)
+        .build();
+    mIntegration.track(trackPayload);
+    verify(mAppboy).logPurchase("id1", "USD", new BigDecimal(1.00));
+    verify(mAppboy).logPurchase("id2", "USD", new BigDecimal(2.00));
+    verifyNoMoreAppboyInteractions();
+  }
+  
+  @Test
+  public void whenPropertiesNull_logPurchaseForSingleItem_logsWithoutProperties() {
+    final String productId = "id1";
+    final String currencyCode = "USD";
+    final BigDecimal price = new BigDecimal(1.00);
+    mIntegration.logPurchaseForSingleItem(productId, currencyCode, price, null);
+    verify(mAppboy).logPurchase(productId, currencyCode, price);
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void whenPropertiesEmpty_logPurchaseForSingleItem_logsWithoutProperties() {
+    final String productId = "id1";
+    final String currencyCode = "USD";
+    final BigDecimal price = new BigDecimal(1.00);
+    mIntegration.logPurchaseForSingleItem(productId, currencyCode, price, new JSONObject());
+    verify(mAppboy).logPurchase(productId, currencyCode, price);
     verifyNoMoreAppboyInteractions();
   }
 
