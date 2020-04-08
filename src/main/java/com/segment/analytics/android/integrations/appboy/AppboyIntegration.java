@@ -22,6 +22,7 @@ import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.TrackPayload;
+import com.segment.analytics.internal.Utils;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -45,9 +46,9 @@ public class AppboyIntegration extends Integration<Appboy> {
   private static final String REVENUE_KEY = "revenue";
   private static final String CURRENCY_KEY = "currency";
   private static final String AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED =
-          "automatic_in_app_message_registration_enabled";
+      "automatic_in_app_message_registration_enabled";
   private static final List<String> RESERVED_KEYS = Arrays.asList("birthday", "email", "firstName",
-    "lastName", "gender", "phone", "address", "avatar");
+      "lastName", "gender", "phone", "address", "avatar");
 
   public static final Factory FACTORY = factory(AppboyIntegrationOptions.builder().build());
 
@@ -307,27 +308,18 @@ public class AppboyIntegration extends Integration<Appboy> {
       return;
     }
 
-    if (event.equals("Order Completed")) {
-      String currency = properties.currency();
+    if (event.equals("Order Completed") || properties.containsKey("revenue")) {
+      String currency = StringUtils.isNullOrBlank(properties.currency())
+          ? DEFAULT_CURRENCY_CODE
+          : properties.currency();
 
-      for (Properties.Product product : properties.products()) {
-        String productId = product.id();
-        BigDecimal price = BigDecimal.valueOf(product.price());
+      List<Properties.Product> products = properties.products();
 
-        JSONObject productProperties = product.toJsonObject();
-        productProperties.remove("id");
-        productProperties.remove("price");
-
-        AppboyProperties appboyProperties = new AppboyProperties(productProperties);
-
-        if (appboyProperties.size() > 0) {
-          mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
-              + " %s.", event, price, currency, productProperties.toString());
-          mAppboy.logPurchase(productId, currency, price, appboyProperties);
-        } else {
-          mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"
-              + " properties.", event, price, currency);
-          mAppboy.logPurchase(productId, currency, price);
+      if (Utils.isNullOrEmpty(products)) {
+        logPurchase(event, currency, properties);
+      } else {
+        for (Properties.Product product : products) {
+          logProductPurchase(event, currency, product);
         }
       }
 
@@ -339,6 +331,49 @@ public class AppboyIntegration extends Integration<Appboy> {
     mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
         event, propertiesJson.toString());
     mAppboy.logCustomEvent(event, new AppboyProperties(propertiesJson));
+  }
+
+  private void logPurchase(String event, String currency, Properties properties) {
+    double revenue = properties.revenue();
+
+    if (revenue != 0) {
+      JSONObject propertiesJson = properties.toJsonObject();
+
+      propertiesJson.remove(REVENUE_KEY);
+      propertiesJson.remove(CURRENCY_KEY);
+
+      if (propertiesJson.length() == 0) {
+        mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"
+            + " properties.", event, revenue, currency);
+        mAppboy.logPurchase(event, currency, new BigDecimal(revenue));
+      } else {
+        mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
+            + " %s.", event, revenue, currency, propertiesJson.toString());
+        mAppboy.logPurchase(event, currency, new BigDecimal(revenue),
+            new AppboyProperties(propertiesJson));
+      }
+    }
+  }
+
+  private void logProductPurchase(String event, String currency, Properties.Product product) {
+    String productId = product.id();
+    BigDecimal price = BigDecimal.valueOf(product.price());
+
+    JSONObject productProperties = product.toJsonObject();
+    productProperties.remove("id");
+    productProperties.remove("price");
+
+    AppboyProperties appboyProperties = new AppboyProperties(productProperties);
+
+    if (appboyProperties.size() > 0) {
+      mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
+          + " %s.", event, price, currency, productProperties.toString());
+      mAppboy.logPurchase(productId, currency, price, appboyProperties);
+    } else {
+      mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"
+          + " properties.", event, price, currency);
+      mAppboy.logPurchase(productId, currency, price);
+    }
   }
 
   @Override
