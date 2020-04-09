@@ -357,17 +357,20 @@ public class AppboyIntegration extends Integration<Appboy> {
 
   private void logProductPurchase(String event, String currency, Properties.Product product) {
     String productId = product.id();
-    BigDecimal price = BigDecimal.valueOf(product.price());
+    BigDecimal price = new BigDecimal(product.price());
 
-    JSONObject productProperties = product.toJsonObject();
-    productProperties.remove("id");
-    productProperties.remove("price");
+    AppboyProperties appboyProperties = new AppboyProperties();
 
-    AppboyProperties appboyProperties = new AppboyProperties(productProperties);
+    for (Map.Entry<String, Object> entry : product.entrySet()) {
+      if (entry.getKey().equalsIgnoreCase("id")) continue;
+      if (entry.getKey().equalsIgnoreCase("price")) continue;
+
+      appboyProperties.addProperty(entry.getKey(), entry.getValue().toString());
+    }
 
     if (appboyProperties.size() > 0) {
       mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
-          + " %s.", event, price, currency, productProperties.toString());
+          + " %s.", event, price, currency, appboyProperties);
       mAppboy.logPurchase(productId, currency, price, appboyProperties);
     } else {
       mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"

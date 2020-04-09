@@ -258,6 +258,24 @@ public class AppboyTest  {
   }
 
   @Test
+  public void testTrackLogsAPurchaseForEachProduct() {
+    Properties purchaseProperties = new Properties();
+    purchaseProperties.putCurrency("EUR");
+    purchaseProperties.putProducts(
+        new Properties.Product("product_1", "sku.product.1", 10.99F),
+        new Properties.Product("product_2", "sku.product.2", 20.99F)
+    );
+
+    TrackPayload trackPayload = new TrackPayloadBuilder().event("Order Completed").properties(purchaseProperties).build();
+
+    mIntegration.track(trackPayload);
+
+    verify(mAppboy).logPurchase("product_1", "EUR", new BigDecimal(10.99F));
+    verify(mAppboy).logPurchase("product_2", "EUR", new BigDecimal(20.99F));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
   public void testScreenDoesNotCallAppboy() {
     mIntegration.screen(new ScreenPayloadBuilder().name("foo").build());
     verifyNoMoreAppboyInteractions();
