@@ -74,7 +74,7 @@ public class AppboyTest  {
     when(mAnalytics.logger("Appboy")).thenReturn(mLogger);
     when(mAnalytics.getApplication()).thenReturn(mContext);
     mIntegration = new AppboyIntegration(
-        mContext, mAppboy, "foo", mLogger, true, true, null);
+        mContext, mAppboy, "foo", mLogger, true, false, null);
   }
 
   @Test
@@ -177,7 +177,6 @@ public class AppboyTest  {
     verify(mAppboyUser).setCustomUserAttribute("string", "value");
     //verifyNoMoreAppboyUserInteractions();
     verify(mAppboy, Mockito.times(1)).changeUser("userId");
-    verify(mAppboy, Mockito.times(15)).getCurrentUser();
     //verifyNoMoreAppboyInteractions();
   }
 
@@ -220,7 +219,7 @@ public class AppboyTest  {
     traits.putGender("female_1");
     identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
     mIntegration.identify(identifyPayload);
-    verify(mAppboy, Mockito.times(1)).changeUser("userId");
+    verify(mAppboy, Mockito.times(2)).changeUser("userId");
     //verifyNoMoreAppboyUserInteractions();
     //verifyNoMoreAppboyInteractions();
   }
@@ -255,6 +254,24 @@ public class AppboyTest  {
     TrackPayload trackPayload = new TrackPayloadBuilder().event("myPurchase").properties(purchaseProperties).build();
     mIntegration.track(trackPayload);
     verify(mAppboy).logPurchase("myPurchase", "JPY", new BigDecimal(10.0));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void testTrackLogsAPurchaseForEachProduct() {
+    Properties purchaseProperties = new Properties();
+    purchaseProperties.putCurrency("EUR");
+    purchaseProperties.putProducts(
+        new Properties.Product("product_1", "sku.product.1", 10.99F),
+        new Properties.Product("product_2", "sku.product.2", 20.99F)
+    );
+
+    TrackPayload trackPayload = new TrackPayloadBuilder().event("Order Completed").properties(purchaseProperties).build();
+
+    mIntegration.track(trackPayload);
+
+    verify(mAppboy).logPurchase("product_1", "EUR", new BigDecimal(10.99F));
+    verify(mAppboy).logPurchase("product_2", "EUR", new BigDecimal(20.99F));
     verifyNoMoreAppboyInteractions();
   }
 
