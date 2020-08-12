@@ -36,9 +36,9 @@ import java.util.Set;
 
 public class AppboyIntegration extends Integration<Appboy> {
   private static final String APPBOY_KEY = "Appboy";
-  private static final Set<String> MALE_TOKENS = new HashSet<String>(Arrays.asList("M",
+  private static final Set<String> MALE_TOKENS = new HashSet(Arrays.asList("M",
       "MALE"));
-  private static final Set<String> FEMALE_TOKENS = new HashSet<String>(Arrays.asList("F",
+  private static final Set<String> FEMALE_TOKENS = new HashSet(Arrays.asList("F",
       "FEMALE"));
   private static final String DEFAULT_CURRENCY_CODE = "USD";
   private static final String API_KEY_KEY = "apiKey";
@@ -48,7 +48,7 @@ public class AppboyIntegration extends Integration<Appboy> {
   private static final String AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED =
           "automatic_in_app_message_registration_enabled";
   private static final List<String> RESERVED_KEYS = Arrays.asList("birthday", "email", "firstName",
-    "lastName", "gender", "phone", "address");
+    "lastName", "gender", "phone", "address", "anonymousId", "userId");
 
   public static final Factory FACTORY = new Factory() {
     @Override
@@ -115,9 +115,6 @@ public class AppboyIntegration extends Integration<Appboy> {
     }
 
     Traits traits = identify.traits();
-    if (traits == null) {
-      return;
-    }
 
     AppboyUser currentUser = mAppboy.getCurrentUser();
     if (currentUser == null) {
@@ -217,10 +214,6 @@ public class AppboyIntegration extends Integration<Appboy> {
       return;
     }
     String event = track.event();
-    if (event == null) {
-      mLogger.verbose("The tracked event is null. Not running rest of track.");
-      return;
-    }
     Properties properties = track.properties();
     try {
       if (event.equals("Install Attributed")) {
@@ -239,14 +232,9 @@ public class AppboyIntegration extends Integration<Appboy> {
       mLogger.verbose("This Install Attributed event is not in the proper format and cannot be"
           + " logged. The exception is %s.", exception);
     }
-    if (properties == null || properties.size() == 0) {
-      mLogger.verbose("Calling appboy.logCustomEvent for event %s with no properties.", event);
-      mAppboy.logCustomEvent(event);
-      return;
-    }
     JSONObject propertiesJson = properties.toJsonObject();
     double revenue = properties.revenue();
-    if (revenue != 0 || properties.products() != null) {
+    if (revenue != 0 || event.equals("Order Completed")) {
       String currencyCode = StringUtils.isNullOrBlank(properties.currency()) ? DEFAULT_CURRENCY_CODE
         : properties.currency();
       propertiesJson.remove(REVENUE_KEY);
@@ -254,15 +242,20 @@ public class AppboyIntegration extends Integration<Appboy> {
 
       if (properties.products() != null) {
         for (Properties.Product product : properties.products()) {
-          logPurchaseForSingleItem(product.id(), currencyCode, new BigDecimal(product.price()), propertiesJson);
+          logPurchaseForSingleItem(product.id(), currencyCode, BigDecimal.valueOf(product.price()), propertiesJson);
         }
       } else {
-        logPurchaseForSingleItem(event, currencyCode, new BigDecimal(revenue), propertiesJson);
+        logPurchaseForSingleItem(event, currencyCode, BigDecimal.valueOf(revenue), propertiesJson);
       }
     } else {
-      mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
-        event, propertiesJson.toString());
-      mAppboy.logCustomEvent(event, new AppboyProperties(propertiesJson));
+      if (propertiesJson == null || propertiesJson.length() == 0) {
+        mLogger.verbose("Calling appboy.logCustomEvent for event %s", event);
+        mAppboy.logCustomEvent(event);
+      } else {
+        mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
+          event, propertiesJson.toString());
+        mAppboy.logCustomEvent(event, new AppboyProperties(propertiesJson));
+      }
     }
   }
 

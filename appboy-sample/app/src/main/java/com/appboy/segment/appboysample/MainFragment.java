@@ -1,5 +1,6 @@
 package com.appboy.segment.appboysample;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -14,9 +15,7 @@ import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Random;
 
 public class MainFragment extends Fragment {
@@ -31,6 +30,7 @@ public class MainFragment extends Fragment {
 
     Button identifyButton = view.findViewById(R.id.identifyButton);
     identifyButton.setOnClickListener(new View.OnClickListener() {
+      @SuppressLint("SetTextI18n")
       @Override
       public void onClick(View arg0) {
         EditText userIDTextField = view.findViewById(R.id.userIDField);
@@ -53,11 +53,11 @@ public class MainFragment extends Fragment {
         address.putCity("City");
         address.putCountry("USA");
         traits.putAddress(address);
-        traits.put("boolean", new Boolean(true));
-        traits.put("integer", new Integer(50));
-        traits.put("double", new Double(7.2));
-        traits.put("float", new Float(120.4));
-        traits.put("long", new Long(1234L));
+        traits.put("boolean", Boolean.TRUE);
+        traits.put("integer", 50);
+        traits.put("double", 7.2);
+        traits.put("float", 120.4f);
+        traits.put("long", 1234L);
         traits.put("string", "hello");
         traits.put("date", new Date(System.currentTimeMillis()));
         Analytics.with(getContext()).identify(newUser, traits, null);
@@ -94,11 +94,12 @@ public class MainFragment extends Fragment {
         }
         Toast.makeText(getContext(), "track() called for custom event '" + customEvent + "' and purchase 'custom_purchase'.", Toast.LENGTH_LONG).show();
         Analytics.with(getContext()).track(customEvent, new Properties().putValue(propertyKey, propertyValue));
-        Properties purchaseProperties = new Properties();
+        Properties purchaseProperties = new Properties()
+          .putRevenue(10.0)
+          .putCurrency("JPY");
         purchaseProperties.put("property_key", "property_value");
-        purchaseProperties.putRevenue(10.0);
-        purchaseProperties.putCurrency("JPY");
         Analytics.with(getContext()).track("custom_purchase", purchaseProperties);
+        Analytics.with(getContext()).track("Order Completed");
         Analytics.with(getContext()).track("Install Attributed", new Properties()
             .putValue("provider", "Tune/Kochava/Branch")
             .putValue("campaign", new Properties()
@@ -109,10 +110,23 @@ public class MainFragment extends Fragment {
                 .putValue("ad_group", "Red Ones")));
 
         // Log multiple products
+        // You should see id1, id2 appear as purchases
         Properties.Product[] products = new Properties.Product[2];
-        products[0] = new Properties.Product("id1", "sku1", 1.00d);
-        products[1] = new Properties.Product("id2", "sku2", 2.00d);
-        Analytics.with(getContext()).track("another_purchase", new Properties().putProducts(products));
+        products[0] = new Properties.Product("id1", "sku1", 1.0);
+        products[1] = new Properties.Product("id2", "sku2", 2.0);
+        Analytics.with(getContext()).track("Order Completed", new Properties().putProducts(products));
+
+        // You should see id3, id4 appear as purchases
+        Properties.Product[] products2 = new Properties.Product[2];
+        products2[0] = new Properties.Product("id3", "sku3", 1.0);
+        products2[1] = new Properties.Product("id4", "sku4", 2.0);
+        Analytics.with(getContext()).track("revenueEvent", new Properties().putProducts(products2).putRevenue(1.0));
+
+        // You should see nonRevenueEvent appear as a custom event
+        Properties.Product[] products3 = new Properties.Product[2];
+        products3[0] = new Properties.Product("id5", "sku3", 1.0);
+        products3[1] = new Properties.Product("id6", "sku4", 2.0);
+        Analytics.with(getContext()).track("nonRevenueEvent", new Properties().putProducts(products3));
       }
     });
     return view;

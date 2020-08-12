@@ -8,7 +8,6 @@ import com.appboy.Appboy;
 import com.appboy.AppboyUser;
 import com.appboy.Constants;
 import com.appboy.enums.Gender;
-import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
@@ -16,20 +15,15 @@ import com.segment.analytics.Traits;
 import com.segment.analytics.ValueMap;
 import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Logger;
+import com.segment.analytics.integrations.ScreenPayload;
 import com.segment.analytics.integrations.TrackPayload;
-import com.segment.analytics.test.IdentifyPayloadBuilder;
-import com.segment.analytics.test.ScreenPayloadBuilder;
-import com.segment.analytics.test.TrackPayloadBuilder;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.Mock;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
@@ -37,6 +31,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.math.BigDecimal;
 
+import static com.segment.analytics.Utils.createTraits;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
@@ -46,8 +41,6 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 import static org.powermock.api.mockito.PowerMockito.verifyNoMoreInteractions;
 import static org.powermock.api.mockito.PowerMockito.verifyStatic;
 import static org.powermock.api.mockito.PowerMockito.when;
-
-import static com.segment.analytics.Utils.createTraits;
 
 // Note - we can't use the Robelectric runner because it can't mock Appboy because it's final.
 // This means that Android jar methods will return default values (because we configured it that
@@ -85,6 +78,7 @@ public class AppboyTest  {
     mockStatic(Constants.class);
     ValueMap settings = new ValueMap().putValue("apiKey", "foo");
     AppboyIntegration integration = (AppboyIntegration) AppboyIntegration.FACTORY.create(settings, mAnalytics);
+    assertThat(integration).isNotNull();
     assertThat(integration.getToken()).isEqualTo("foo");
   }
 
@@ -133,15 +127,12 @@ public class AppboyTest  {
   @Test
   public void testIdentifyCallWithNoFieldsSet() {
     Traits traits = createTraits("userId");
-    IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     verify(mAppboy, Mockito.times(1)).changeUser("userId");
-    //verifyNoMoreAppboyUserInteractions();
-    //verifyNoMoreAppboyInteractions();
   }
 
   @Test
-  @Ignore
   public void testIdentifyFields() {
     Traits traits = createTraits("userId");
     traits.putEmail("a@o.o");
@@ -153,14 +144,16 @@ public class AppboyTest  {
     address.putCity("city");
     address.putCountry("country");
     traits.putAddress(address);
-    traits.put("int", new Integer(10));
-    traits.put("bool", new Boolean(true));
-    traits.put("double", new Double(4.2));
-    traits.put("float", new Float(5.0));
-    traits.put("long", new Long(15L));
+    traits.put("int", 10);
+    traits.put("bool", Boolean.TRUE);
+    traits.put("double", 4.2);
+    traits.put("float", 5.0f);
+    traits.put("long", 15L);
     traits.put("string", "value");
     traits.put("unknown", new Object());
-    IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    traits.put("userId", "id1");
+    traits.put("anonymousId", "id2");
+    IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     verify(mAppboyUser).setEmail("a@o.o");
     verify(mAppboyUser).setFirstName("first");
@@ -169,98 +162,146 @@ public class AppboyTest  {
     verify(mAppboyUser).setPhoneNumber("5555551234");
     verify(mAppboyUser).setHomeCity("city");
     verify(mAppboyUser).setCountry("country");
-    verify(mAppboyUser).setCustomUserAttribute("int", new Integer(10));
-    verify(mAppboyUser).setCustomUserAttribute("bool", new Boolean(true));
-    verify(mAppboyUser).setCustomUserAttribute("double", new Double(4.2));
+    verify(mAppboyUser).setCustomUserAttribute("int", 10);
+    verify(mAppboyUser).setCustomUserAttribute("bool", Boolean.TRUE);
+    verify(mAppboyUser).setCustomUserAttribute("double", 4.2);
     verify(mAppboyUser).setCustomUserAttribute("float", new Float(5.0));
-    verify(mAppboyUser).setCustomUserAttribute("long", new Long(15L));
+    verify(mAppboyUser).setCustomUserAttribute("long", 15L);
     verify(mAppboyUser).setCustomUserAttribute("string", "value");
-    //verifyNoMoreAppboyUserInteractions();
+    verify(mAppboyUser, Mockito.never()).setCustomUserAttribute("userId", "id1");
+    verify(mAppboyUser, Mockito.never()).setCustomUserAttribute("anonymousId", "id2");
     verify(mAppboy, Mockito.times(1)).changeUser("userId");
-    verify(mAppboy, Mockito.times(12)).getCurrentUser();
-    //verifyNoMoreAppboyInteractions();
+    verify(mAppboy, Mockito.times(1)).getCurrentUser();
   }
 
   @Test
-  @Ignore
   public void testIdentifyGender() {
     Traits traits = createTraits("userId");
     traits.putGender("male");
-    IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     traits.putGender("MALe");
-    identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     traits.putGender("m");
-    identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     verify(mAppboyUser, Mockito.times(3)).setGender(Gender.MALE);
     traits.putGender("female");
-    identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     traits.putGender("feMALe");
-    identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     traits.putGender("f");
-    identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     verify(mAppboy, Mockito.times(6)).changeUser("userId");
     verify(mAppboyUser, Mockito.times(3)).setGender(Gender.FEMALE);
-    //verifyNoMoreAppboyUserInteractions();
+    verify(mAppboyUser, Mockito.times(3)).setGender(Gender.MALE);
     verify(mAppboy, Mockito.times(6)).getCurrentUser();
-    //verifyNoMoreAppboyInteractions();
   }
 
   @Test
   public void testIdentifyGenderOnBadInputs() {
     Traits traits = createTraits("userId");
     traits.putGender("males");
-    IdentifyPayload identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     traits.putGender("female_1");
-    identifyPayload = new IdentifyPayloadBuilder().traits(traits).build();
+    identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
     verify(mAppboy, Mockito.times(2)).changeUser("userId");
-    //verifyNoMoreAppboyUserInteractions();
-    //verifyNoMoreAppboyInteractions();
   }
 
   @Test
-  public void testTrackLogsACustomEventWithoutProperties() {
-    TrackPayload trackPayload = new TrackPayloadBuilder().event("myEvent").build();
+  public void testTrackLogsCustomEventWithoutProperties() {
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("myEvent", null);
     mIntegration.track(trackPayload);
 
-    // Note, properties won't work in this test because the toJsonString uses an Android method
-    // that returns a default value.
+    // Note, testing event and purchase properties doesn't currently work because the toJsonObject
+    // uses an Android method that returns a default value.
     // TODO - update tests once we've got a workaround.
     verify(mAppboy).logCustomEvent("myEvent");
     verifyNoMoreAppboyInteractions();
   }
 
   @Test
-  public void testTrackLogsAPurchaseWithoutProperties() {
+  public void testTrackLogsCustomEventForNonOrderCompletedEventWithNoRevenueAndProducts() {
     Properties purchaseProperties = new Properties();
-    purchaseProperties.putRevenue(10.0);
-    TrackPayload trackPayload = new TrackPayloadBuilder().event("myPurchase").properties(purchaseProperties).build();
+    purchaseProperties.putProducts(new Properties.Product("foo", "bar", 10));
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("nonRevenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("myPurchase", "USD", new BigDecimal(10.0));
+    verify(mAppboy, Mockito.never()).logPurchase("c", "USD", new BigDecimal("10.0"));
+    verify(mAppboy).logCustomEvent("nonRevenueEvent");
     verifyNoMoreAppboyInteractions();
   }
 
   @Test
-  public void testTrackLogsAPurchaseWithoutPropertiesWithCustomCurrency() {
+  public void testTrackLogsPurchaseForOrderCompletedEvent() {
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", null);
+    mIntegration.track(trackPayload);
+    verify(mAppboy).logPurchase("Order Completed", "USD", new BigDecimal("0.0"));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void testTrackLogsPurchaseForEventWithRevenue() {
+    Properties purchaseProperties = new Properties();
+    purchaseProperties.putRevenue(10.0);
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("revenueEvent", purchaseProperties);
+    mIntegration.track(trackPayload);
+    verify(mAppboy).logPurchase("revenueEvent", "USD", new BigDecimal("10.0"));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void testTrackLogsPurchasesForOrderCompletedEventWithProducts() {
+    Properties purchaseProperties = new Properties();
+    purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", purchaseProperties);
+    mIntegration.track(trackPayload);
+    verify(mAppboy).logPurchase("id1", "USD", new BigDecimal("10.0"));
+    verify(mAppboy).logPurchase("id2", "USD", new BigDecimal("12.0"));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void testTrackLogsPurchasesForEventWithRevenueWithProducts() {
+    Properties purchaseProperties = new Properties();
+    purchaseProperties.putRevenue(10.0);
+    purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("revenueEvent", purchaseProperties);
+    mIntegration.track(trackPayload);
+    verify(mAppboy).logPurchase("id1", "USD", new BigDecimal("10.0"));
+    verify(mAppboy).logPurchase("id2", "USD", new BigDecimal("12.0"));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void testTrackLogsPurchaseForOrderCompletedEventWithCustomCurrency() {
+    Properties purchaseProperties = new Properties();
+    purchaseProperties.putCurrency("JPY");
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", purchaseProperties);
+    mIntegration.track(trackPayload);
+    verify(mAppboy).logPurchase("Order Completed", "JPY", new BigDecimal("0.0"));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void testTrackLogsPurchaseForEventWithRevenueWithCustomCurrency() {
     Properties purchaseProperties = new Properties();
     purchaseProperties.putRevenue(10.0);
     purchaseProperties.putCurrency("JPY");
-    TrackPayload trackPayload = new TrackPayloadBuilder().event("myPurchase").properties(purchaseProperties).build();
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("revenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("myPurchase", "JPY", new BigDecimal(10.0));
+    verify(mAppboy).logPurchase("revenueEvent", "JPY", new BigDecimal("10.0"));
     verifyNoMoreAppboyInteractions();
   }
 
   @Test
   public void testScreenDoesNotCallAppboy() {
-    mIntegration.screen(new ScreenPayloadBuilder().name("foo").build());
+    mIntegration.screen(new ScreenPayload.Builder().userId("userId").name("foo").build());
     verifyNoMoreAppboyInteractions();
   }
 
@@ -276,31 +317,12 @@ public class AppboyTest  {
     mIntegration.reset();
     verifyNoMoreAppboyInteractions();
   }
-
-  @Test
-  public void whenProvidedArrayOfProducts_logPurchase_calledForEachPurchase() {
-    Properties.Product[] products = new Properties.Product[2];
-    products[0] = new Properties.Product("id1", "sku1", 1.00d);
-    products[1] = new Properties.Product("id2", "sku2", 2.00d);
-    Properties purchaseProperties = new Properties();
-    purchaseProperties.putProducts(products);
-
-    final TrackPayload trackPayload = new TrackPayload.Builder()
-        .userId("u")
-        .event("Order Completed")
-        .properties(purchaseProperties)
-        .build();
-    mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("id1", "USD", new BigDecimal(1.00));
-    verify(mAppboy).logPurchase("id2", "USD", new BigDecimal(2.00));
-    verifyNoMoreAppboyInteractions();
-  }
   
   @Test
   public void whenPropertiesNull_logPurchaseForSingleItem_logsWithoutProperties() {
     final String productId = "id1";
     final String currencyCode = "USD";
-    final BigDecimal price = new BigDecimal(1.00);
+    final BigDecimal price = new BigDecimal("1.00");
     mIntegration.logPurchaseForSingleItem(productId, currencyCode, price, null);
     verify(mAppboy).logPurchase(productId, currencyCode, price);
     verifyNoMoreAppboyInteractions();
@@ -310,7 +332,7 @@ public class AppboyTest  {
   public void whenPropertiesEmpty_logPurchaseForSingleItem_logsWithoutProperties() {
     final String productId = "id1";
     final String currencyCode = "USD";
-    final BigDecimal price = new BigDecimal(1.00);
+    final BigDecimal price = new BigDecimal("1.00");
     mIntegration.logPurchaseForSingleItem(productId, currencyCode, price, new JSONObject());
     verify(mAppboy).logPurchase(productId, currencyCode, price);
     verifyNoMoreAppboyInteractions();
@@ -321,8 +343,26 @@ public class AppboyTest  {
     verifyNoMoreInteractions(mAppboy);
   }
 
-  private void verifyNoMoreAppboyUserInteractions() {
-    verifyNoMoreInteractions(AppboyUser.class);
-    verifyNoMoreInteractions(mAppboyUser);
+  private IdentifyPayload getBasicIdentifyPayloadWithTraits(Traits traits) {
+    return new IdentifyPayload
+      .Builder()
+      .userId("userId")
+      .traits(traits)
+      .build();
+  }
+
+  private TrackPayload getBasicTrackPayloadWithEventAndProps(String event, Properties props) {
+    if (props == null) {
+      return new TrackPayload.Builder()
+        .userId("userId")
+        .event(event)
+        .build();
+    } else {
+      return new TrackPayload.Builder()
+        .userId("userId")
+        .event(event)
+        .properties(props)
+        .build();
+    }
   }
 }

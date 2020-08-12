@@ -1,3 +1,12 @@
+## 5.0.0
+
+##### Breaking
+- Updated to [Braze Android SDK 8.1.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#810).
+
+##### Fixed
+- Fixes an issue where purchases would be logged for any `track` payload with `products` included. After this fix, a `track` payload must either contain `revenue` or have the event name `Order Completed` to result in a logged purchase to Braze.
+- Fixes an issue where `anonymousId` and `userId` could be set as custom attributes when calling `identify()`.
+
 ## 4.0.0
 
 ##### Breaking
