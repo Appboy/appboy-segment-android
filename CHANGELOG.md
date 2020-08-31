@@ -1,7 +1,9 @@
-## 5.0.0
+## 6.0.0
 
 ##### Breaking
-- Updated to [Braze Android SDK 8.1.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#810).
+- Updated to [Braze Android SDK 9.0.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#900).
+
+## 5.0.0
 
 ##### Fixed
 - Fixes an issue where purchases would be logged for any `track` payload with `products` included. After this fix, a `track` payload must either contain `revenue` or have the event name `Order Completed` to result in a logged purchase to Braze.
