@@ -6,8 +6,8 @@ import com.appboy.AppboyUser;
 import com.appboy.configuration.AppboyConfig;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Traits;
+import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Logger;
-import com.segment.analytics.test.IdentifyPayloadBuilder;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -126,7 +126,7 @@ public class AppboyIntegrationOptionsAndroidTest {
   }
 
   @Test
-  public void testShouldNotTriggerUpdateIfTraitDiffingDisabled() {
+  public void testShouldTriggerUpdateIfTraitDiffingDisabled() {
     givenIntegrationWithOptions(AppboyIntegrationOptions.builder()
         .enableTraitDiffing(false)
         .build()
@@ -142,8 +142,8 @@ public class AppboyIntegrationOptionsAndroidTest {
     callIdentifyWithTraits(traitsUpdate);
 
     InOrder inOrder = Mockito.inOrder(appboyUser);
-    inOrder.verify(appboyUser, times(1)).setEmail(TRAIT_EMAIL);
-    inOrder.verify(appboyUser, times(1)).setEmail(TRAIT_EMAIL_UPDATED);
+    inOrder.verify(appboyUser, times(2)).setEmail(TRAIT_EMAIL);
+    inOrder.verify(appboyUser, times(2)).setEmail(TRAIT_EMAIL_UPDATED);
   }
 
   @Test
