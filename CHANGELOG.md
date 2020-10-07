@@ -1,3 +1,38 @@
+## 6.0.0
+
+##### Breaking
+- Updated to [Braze Android SDK 9.0.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#900).
+
+## 5.0.0
+
+##### Fixed
+- Fixes an issue where purchases would be logged for any `track` payload with `products` included. After this fix, a `track` payload must either contain `revenue` or have the event name `Order Completed` to result in a logged purchase to Braze.
+- Fixes an issue where `anonymousId` and `userId` could be set as custom attributes when calling `identify()`.
+
+## 4.0.0
+
+##### Breaking
+- Log separate purchases for each `product` in the `products` array in a `track` call.
+  - In the past we always used the event name as the Braze product ID.
+  - Now if a track call has the event name `Order Completed` or key `revenue` included in `properties` and has a `products` array, we will log each object in the array as a separate purchase using `productId` as the Braze product ID. `price` and `quantity` will be read from the individual array if available and all non-Braze recognized fields from the high level `properties` and each individual array will be combined and sent as event properties.
+  - If there is no `products` array we will continue using the event name as the Braze product ID if the key `revenue` is included in `properties`.
+
+## 3.0.0
+
+##### Breaking
+- Updated to [Braze Android SDK 6.0.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#600).
+
+##### Changed
+- The `campaign` property value is now casted to `ValueMap` instead of its `Properties` subclass.
+  - See https://github.com/Appboy/appboy-segment-android/pull/19. Thanks @ciaranmul!
+- The `appboy-sample` sample app is now located within this repo instead of a separate standalone repo.
+- The SDK code has been moved into a directory called `appboy-segment-integration`.
+
+## 2.5.2
+
+##### Fixed
+- Fixed potential for null pointer exception in the `identify()` method resulting from a null value for `Appboy.getCurrentUser()`.
+
 ## 2.5.1
 
 ##### Added

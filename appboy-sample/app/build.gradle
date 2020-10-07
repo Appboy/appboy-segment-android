@@ -1,0 +1,47 @@
+apply plugin: 'com.android.application'
+
+android {
+  compileSdkVersion 29
+  buildToolsVersion "29.0.0"
+
+  defaultConfig {
+    applicationId "com.appboy.segment.appboysample"
+    minSdkVersion 16
+    targetSdkVersion 29
+    versionCode 1
+    versionName "1.0.0"
+  }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+  }
+}
+
+// Grabs the first line of the changelog to get the current version. Expects the line to start with Markdown syntax
+// (ex: ## major.minor.build)
+def changelogFile = new File("../public/CHANGELOG.md")
+if (changelogFile.exists()) {
+  changelogFile.withReader {
+    version = it.readLine().substring(3)
+  }
+  logger.lifecycle("Setting version to last recorded version in `../appboy-segment-integration/CHANGELOG.md`: " + version)
+} else {
+  version = "+"
+  logger.lifecycle("Setting version to highest version found in local maven cache: " + version)
+}
+
+dependencies {
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation 'com.android.support:appcompat-v7:28.0.0'
+  implementation 'com.android.support:design:28.0.0'
+  implementation('com.segment.analytics.android:analytics:4.3.1') {
+    transitive = true
+  }
+  implementation "com.appboy:appboy-segment-integration:${version}"
+}
