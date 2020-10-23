@@ -1,11 +1,15 @@
 package com.segment.analytics.android.integrations.appboy;
 
 import android.app.Activity;
-import android.support.annotation.Nullable;
-import android.support.annotation.VisibleForTesting;
+import android.content.Context;
+
+import androidx.annotation.Nullable;
+import androidx.annotation.RestrictTo;
+import androidx.annotation.VisibleForTesting;
 
 import com.appboy.Appboy;
 import com.appboy.AppboyUser;
+import com.appboy.IAppboy;
 import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
@@ -71,8 +75,9 @@ public class AppboyIntegration extends Integration<Appboy> {
         builder.setCustomEndpoint(customEndpoint);
       }
 
-      Appboy.configure(analytics.getApplication().getApplicationContext(), builder.build());
-      Appboy appboy = Appboy.getInstance(analytics.getApplication());
+      final Context applicationContext = analytics.getApplication().getApplicationContext();
+      Appboy.configure(applicationContext, builder.build());
+      Appboy appboy = Appboy.getInstance(applicationContext);
       logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
       return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled);
     }
@@ -83,12 +88,25 @@ public class AppboyIntegration extends Integration<Appboy> {
     }
   };
 
-  private final Appboy mAppboy;
+  private final IAppboy mAppboy;
   private final String mToken;
   private final Logger mLogger;
   private final boolean mAutomaticInAppMessageRegistrationEnabled;
 
-  public AppboyIntegration(Appboy appboy, String token, Logger logger,
+  public AppboyIntegration(Appboy appboy,
+                           String token,
+                           Logger logger,
+                           boolean automaticInAppMessageRegistrationEnabled) {
+    mAppboy = appboy;
+    mToken = token;
+    mLogger = logger;
+    mAutomaticInAppMessageRegistrationEnabled = automaticInAppMessageRegistrationEnabled;
+  }
+
+  @RestrictTo(RestrictTo.Scope.TESTS)
+  public AppboyIntegration(IAppboy appboy,
+                           String token,
+                           Logger logger,
                            boolean automaticInAppMessageRegistrationEnabled) {
     mAppboy = appboy;
     mToken = token;
@@ -102,7 +120,7 @@ public class AppboyIntegration extends Integration<Appboy> {
 
   @Override
   public Appboy getUnderlyingInstance() {
-    return mAppboy;
+    return (Appboy) mAppboy;
   }
 
   @Override

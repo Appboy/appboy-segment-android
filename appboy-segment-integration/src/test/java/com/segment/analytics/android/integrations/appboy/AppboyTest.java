@@ -4,11 +4,12 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 
-import com.appboy.Appboy;
+import androidx.test.core.app.ApplicationProvider;
+
 import com.appboy.AppboyUser;
-import com.appboy.Constants;
+import com.appboy.IAppboy;
 import com.appboy.enums.Gender;
-import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
+import com.appboy.models.outgoing.AppboyProperties;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
@@ -22,64 +23,54 @@ import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.LooperMode;
 
 import java.math.BigDecimal;
 
 import static com.segment.analytics.Utils.createTraits;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.MockitoAnnotations.initMocks;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-import static org.powermock.api.mockito.PowerMockito.verifyNoMoreInteractions;
-import static org.powermock.api.mockito.PowerMockito.verifyStatic;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
-// Note - we can't use the Robelectric runner because it can't mock Appboy because it's final.
-// This means that Android jar methods will return default values (because we configured it that
-// way in the build.gradle) which can lead to strange behavior.
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({ "org.mockito.*", "org.robolectric.*", "android.*", "org.json.*",
-    "com.appboy.Constants"})
-@SuppressStaticInitializationFor("com.appboy.Constants")
-@PrepareForTest({Appboy.class, AppboyInAppMessageManager.class, Constants.class})
-public class AppboyTest  {
-  @Mock Analytics mAnalytics;
-  @Mock Application mContext;
-  @Mock Appboy mAppboy;
-  @Mock AppboyUser mAppboyUser;
-  @Mock AppboyInAppMessageManager mInAppMessageManager;
-  Logger mLogger;
-  AppboyIntegration mIntegration;
+@LooperMode(LooperMode.Mode.LEGACY)
+@RunWith(RobolectricTestRunner.class)
+public class AppboyTest {
+  private IAppboy mAppboy;
+  private AppboyUser mAppboyUser;
+  private AppboyIntegration mIntegration;
+  private Analytics mAnalytics;
 
   @Before
   public void setUp() {
-    initMocks(this);
-    mockStatic(Appboy.class);
-    mockStatic(AppboyInAppMessageManager.class);
-    when(Appboy.getInstance(any(Context.class))).thenReturn(mAppboy);
+    mAnalytics = mock(Analytics.class);
+    final Application mockApplication = mock(Application.class);
+    Mockito.when(mockApplication.getApplicationContext()).thenReturn(getContext());
+    Mockito.when(mAnalytics.getApplication()).thenReturn(mockApplication);
+    mAppboy = spy(new MockAppboy());
+    mAppboyUser = mock(AppboyUser.class);
+
     when(mAppboy.getCurrentUser()).thenReturn(mAppboyUser);
-    when(AppboyInAppMessageManager.getInstance()).thenReturn(mInAppMessageManager);
-    mLogger = Logger.with(Analytics.LogLevel.DEBUG);
-    when(mAnalytics.logger("Appboy")).thenReturn(mLogger);
-    when(mAnalytics.getApplication()).thenReturn(mContext);
-    mIntegration = new AppboyIntegration(mAppboy, "foo", mLogger, true);
+    Logger logger = Logger.with(Analytics.LogLevel.DEBUG);
+    when(mAnalytics.logger("Appboy")).thenReturn(logger);
+    mIntegration = new AppboyIntegration(mAppboy, "foo", logger, true);
+  }
+
+  private Context getContext() {
+    return ApplicationProvider.getApplicationContext();
   }
 
   @Test
   public void testFactoryLoadsProperValuesFromSettings() {
-    mockStatic(Constants.class);
     ValueMap settings = new ValueMap().putValue("apiKey", "foo");
     AppboyIntegration integration = (AppboyIntegration) AppboyIntegration.FACTORY.create(settings, mAnalytics);
-    assertThat(integration).isNotNull();
-    assertThat(integration.getToken()).isEqualTo("foo");
+    assertNotNull(integration);
+    assertEquals("foo", integration.getToken());
   }
 
   @Test
@@ -95,26 +86,6 @@ public class AppboyTest  {
     Activity activity = mock(Activity.class);
     mIntegration.onActivityStopped(activity);
     verify(mAppboy).closeSession(activity);
-    verifyNoMoreAppboyInteractions();
-  }
-
-  @Test
-  public void testActivityResumeRegistersIamManager() {
-    Activity activity = mock(Activity.class);
-    mIntegration.onActivityResumed(activity);
-    verifyStatic();
-    AppboyInAppMessageManager.getInstance();
-    verify(mInAppMessageManager).registerInAppMessageManager(activity);
-    verifyNoMoreAppboyInteractions();
-  }
-
-  @Test
-  public void testActivityPauseUnregistersIamManager() {
-    Activity activity = mock(Activity.class);
-    mIntegration.onActivityPaused(activity);
-    verifyStatic();
-    AppboyInAppMessageManager.getInstance();
-    verify(mInAppMessageManager).unregisterInAppMessageManager(activity);
     verifyNoMoreAppboyInteractions();
   }
 
@@ -233,7 +204,7 @@ public class AppboyTest  {
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("nonRevenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
     verify(mAppboy, Mockito.never()).logPurchase("c", "USD", new BigDecimal("10.0"));
-    verify(mAppboy).logCustomEvent("nonRevenueEvent");
+    verify(mAppboy).logCustomEvent(Mockito.eq("nonRevenueEvent"), Mockito.any(AppboyProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -261,8 +232,8 @@ public class AppboyTest  {
     purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("id1", "USD", new BigDecimal("10.0"));
-    verify(mAppboy).logPurchase("id2", "USD", new BigDecimal("12.0"));
+    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(AppboyProperties.class));
+    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(AppboyProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -273,8 +244,8 @@ public class AppboyTest  {
     purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("revenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("id1", "USD", new BigDecimal("10.0"));
-    verify(mAppboy).logPurchase("id2", "USD", new BigDecimal("12.0"));
+    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(AppboyProperties.class));
+    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(AppboyProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -339,7 +310,6 @@ public class AppboyTest  {
   }
 
   private void verifyNoMoreAppboyInteractions() {
-    verifyNoMoreInteractions(Appboy.class);
     verifyNoMoreInteractions(mAppboy);
   }
 
