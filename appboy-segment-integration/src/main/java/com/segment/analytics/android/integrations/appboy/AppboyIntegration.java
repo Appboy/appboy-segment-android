@@ -211,7 +211,10 @@ public class AppboyIntegration extends Integration<Appboy> {
         currentUser.setCustomUserAttributeToSecondsFromEpoch(key, secondsFromEpoch);
       } else if (value instanceof String) {
         currentUser.setCustomUserAttribute(key, (String) value);
-      } else {
+      } else if (value instanceof String[]) {
+        currentUser.setCustomAttributeArray(key, (String[]) value);
+      }
+      else {
         mLogger.info("Appboy can't map segment value for custom Appboy user "
           + "attribute with key %s and value %s", key, value);
       }

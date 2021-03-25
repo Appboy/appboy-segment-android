@@ -1,3 +1,21 @@
+apply plugin: 'com.android.library'
+apply plugin: 'checkstyle'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.artifactory'
+
+// Grabs the first line of the changelog to get the current version. 
+// Expects the line to start with Markdown syntax
+// (ex: ## major.minor.build)
+new File("../public/CHANGELOG.md").withReader { version = it.readLine().substring(3) }
+logger.lifecycle("Setting version to last recorded version in CHANGELOG.md: " + version)
+
+allprojects {
+  version = rootProject.version
+}
+
+apply from: '../support/extra-gradle/appboy-release.gradle'
+apply from: '../support/extra-gradle/artifactory-release.gradle'
+
 buildscript {
   repositories {
     jcenter()
@@ -6,13 +24,10 @@ buildscript {
   }
 
   dependencies {
-    classpath 'com.android.tools.build:gradle:4.0.1'
+    classpath "com.android.tools.build:gradle:${ANDROID_BUILD_TOOLS_GRADLE_VERSION}"
+    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:${JFROG_BUILD_INFO_EXTRACTOR_VERSION}"
   }
 }
-
-apply plugin: 'com.android.library'
-apply plugin: 'checkstyle'
-apply plugin: 'maven-publish'
 
 android {
   compileSdkVersion 30
@@ -54,7 +69,7 @@ dependencies {
 
   compileOnly 'com.segment.analytics.android:analytics:4.3.1'
 
-  api 'com.appboy:android-sdk-ui:10.0.0'
+  api 'com.appboy:android-sdk-ui:13.1.0'
 
   testImplementation 'junit:junit:4.12'
 
@@ -71,102 +86,9 @@ dependencies {
   androidTestImplementation 'junit:junit:4.12'
 }
 
-// Grabs the first line of the changelog to get the current version. Expects the line to start with Markdown syntax
-// (ex: ## major.minor.build)
-new File("../public/CHANGELOG.md").withReader { version = it.readLine().substring(3) }
-logger.lifecycle("Setting version to last recorded version in CHANGELOG.md: " + version)
-
-task sourcesJar(type: Jar, dependsOn: ":assemble") {
-  from android.sourceSets.main.java.srcDirs
-  classifier = 'sources'
-  destinationDir = file("build/outputs/sources/")
-
-  archiveName = "${project.getName()}-sources.jar"
-}
-
-task javadocJar(type: Jar, dependsOn: ":javadocRelease") {
-  classifier = 'javadoc'
-  // The "from" here means to take the HTML javadoc from some directory and convert it into a JAR
-  from file("build/outputs/javadoc/")
-  destinationDir = file("build/outputs/javadocJar/")
-}
-
 task javadocRelease(type: Javadoc) {
   source(android.sourceSets.main.java.srcDirs)
   classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
   failOnError false
   destinationDir = file("build/outputs/javadoc/")
-}
-
-if (project.hasProperty("signing.keyId") && enableSigning.toBoolean()) {
-  apply plugin: 'signing'
-  signing {
-    sign configurations.archives
-    sign publishing.publications
-  }
-}
-
-// Must come after the artifact tasks, such as `sourcesJar`, above.
-publishing {
-  publications {
-    maven(MavenPublication) {
-      groupId = 'com.appboy'
-      artifactId 'appboy-segment-integration'
-      artifact("build/outputs/aar/appboy-segment-integration-release.aar")
-      artifact sourcesJar
-      artifact javadocJar
-
-      pom.withXml {
-        def dependenciesNode = asNode().appendNode('dependencies')
-
-        // Iterate over the api dependencies (i.e. the braze lib),
-        // adding a <dependency> node for each
-        configurations.api.allDependencies.each {
-          def dependencyNode = dependenciesNode.appendNode('dependency')
-          dependencyNode.appendNode('groupId', it.group)
-          dependencyNode.appendNode('artifactId', it.name)
-          dependencyNode.appendNode('version', it.version)
-          dependencyNode.appendNode('scope', 'compile')
-        }
-      }
-
-      pom {
-        name = 'Appboy Integration'
-        description = 'Appboy Integration for Segment Android Analytics'
-        url = 'http://github.com/appboy/appboy-segment-android'
-
-        licenses {
-          license {
-            name = 'The MIT License (MIT)'
-            url = 'http://opensource.org/licenses/MIT'
-            distribution = 'repo'
-          }
-        }
-        developers {
-          developer {
-            id = 'appboy'
-            name = 'Appboy, Inc.'
-          }
-        }
-        scm {
-          connection = 'scm:git:git://github.com/appboy/appboy-segment-android.git'
-          developerConnection = 'scm:git:ssh://git@github.com/appboy/appboy-segment-android.git'
-          url = 'http://github.com/appboy/appboy-segment-android'
-        }
-      }
-    }
-  }
-  repositories {
-    maven {
-      credentials {
-        username project.hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
-        password project.hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
-      }
-      if(version.endsWith('SNAPSHOT')) {
-        url "https://oss.sonatype.org/content/repositories/snapshots/"
-      } else {
-        url "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-      }
-    }
-  }
 }

@@ -60,6 +60,7 @@ public class MainFragment extends Fragment {
         traits.put("float", 120.4f);
         traits.put("long", 1234L);
         traits.put("string", "hello");
+        traits.put("string_array", new String[]{"one", "two", "foo"});
         traits.put("date", new Date(System.currentTimeMillis()));
         Analytics.with(getContext()).identify(newUser, traits, null);
       }

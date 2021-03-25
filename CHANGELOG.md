@@ -1,3 +1,15 @@
+## 8.0.0
+
+##### Breaking
+- Updated to [Braze Android SDK 13.1.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#1310).
+- In your top-level project `build.gradle`, add the following as repositories under `allprojects` -> `repositories`:
+```
+maven { url "http://appboy.github.io/appboy-segment-android/sdk" }
+```
+
+##### Added
+- Added support for `String[]` typed `Traits` values.
+
 ## 7.0.0
 
 ##### Breaking
