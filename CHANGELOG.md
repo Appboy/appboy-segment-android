@@ -1,9 +1,17 @@
+## 8.0.2
+
+##### Updated
+- - Updated to [Braze Android SDK 13.1.2](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#1312).
+
 ## 8.0.1
 
 ##### Updated
 - Updated to [Braze Android SDK 13.1.1](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#1311).
 
 ## 8.0.0
+
+##### Known Issues with version 8.0.0
+Dismissing notifications with the application open can result in the transparent NotificationTrampolineActivity to remain at the top of the application back-stack and appear to hang the application. It is advised to update to version 8.0.2 of the SDK instead of this version.
 
 ##### Breaking
 - Updated to [Braze Android SDK 13.1.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#1310).
