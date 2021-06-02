@@ -10,7 +10,6 @@ import androidx.annotation.VisibleForTesting;
 import com.appboy.Appboy;
 import com.appboy.AppboyUser;
 import com.appboy.IAppboy;
-import com.appboy.configuration.AppboyConfig;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
 import com.appboy.enums.SdkFlavor;
@@ -18,6 +17,7 @@ import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.models.outgoing.AttributionData;
 import com.appboy.support.StringUtils;
 import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
+import com.braze.configuration.BrazeConfig;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
@@ -68,7 +68,7 @@ public class AppboyIntegration extends Integration<Appboy> {
         return null;
       }
       String customEndpoint = settings.getString(CUSTOM_ENDPOINT_KEY);
-      AppboyConfig.Builder builder = new AppboyConfig.Builder()
+      BrazeConfig.Builder builder = new BrazeConfig.Builder()
           .setApiKey(apiKey)
           .setSdkFlavor(flavor);
       if (!StringUtils.isNullOrBlank(customEndpoint)) {
