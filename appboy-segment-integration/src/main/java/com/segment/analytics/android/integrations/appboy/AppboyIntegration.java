@@ -8,7 +8,6 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 
 import com.appboy.Appboy;
-import com.appboy.AppboyUser;
 import com.appboy.IAppboy;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
@@ -16,8 +15,9 @@ import com.appboy.enums.SdkFlavor;
 import com.appboy.models.outgoing.AppboyProperties;
 import com.appboy.models.outgoing.AttributionData;
 import com.appboy.support.StringUtils;
-import com.appboy.ui.inappmessage.AppboyInAppMessageManager;
+import com.braze.BrazeUser;
 import com.braze.configuration.BrazeConfig;
+import com.braze.ui.inappmessage.BrazeInAppMessageManager;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
@@ -30,8 +30,10 @@ import com.segment.analytics.integrations.TrackPayload;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -40,9 +42,9 @@ import java.util.Set;
 
 public class AppboyIntegration extends Integration<Appboy> {
   private static final String APPBOY_KEY = "Appboy";
-  private static final Set<String> MALE_TOKENS = new HashSet(Arrays.asList("M",
+  private static final Set<String> MALE_TOKENS = new HashSet<>(Arrays.asList("M",
       "MALE"));
-  private static final Set<String> FEMALE_TOKENS = new HashSet(Arrays.asList("F",
+  private static final Set<String> FEMALE_TOKENS = new HashSet<>(Arrays.asList("F",
       "FEMALE"));
   private static final String DEFAULT_CURRENCY_CODE = "USD";
   private static final String API_KEY_KEY = "apiKey";
@@ -64,7 +66,7 @@ public class AppboyIntegration extends Integration<Appboy> {
               settings.getBoolean(AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED, true);
 
       if (StringUtils.isNullOrBlank(API_KEY_KEY)) {
-        logger.info("Appboy+Segment integration attempted to initialize without api key.");
+        logger.info("Braze+Segment integration attempted to initialize without api key.");
         return null;
       }
       String customEndpoint = settings.getString(CUSTOM_ENDPOINT_KEY);
@@ -78,7 +80,7 @@ public class AppboyIntegration extends Integration<Appboy> {
       final Context applicationContext = analytics.getApplication().getApplicationContext();
       Appboy.configure(applicationContext, builder.build());
       Appboy appboy = Appboy.getInstance(applicationContext);
-      logger.verbose("Configured Appboy+Segment integration and initialized Appboy.");
+      logger.verbose("Configured Braze+Segment integration and initialized Appboy.");
       return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled);
     }
 
@@ -134,7 +136,7 @@ public class AppboyIntegration extends Integration<Appboy> {
 
     Traits traits = identify.traits();
 
-    AppboyUser currentUser = mAppboy.getCurrentUser();
+    BrazeUser currentUser = mAppboy.getCurrentUser();
     if (currentUser == null) {
       mLogger.info("Appboy.getCurrentUser() was null, aborting identify");
       return;
@@ -213,9 +215,21 @@ public class AppboyIntegration extends Integration<Appboy> {
         currentUser.setCustomUserAttribute(key, (String) value);
       } else if (value instanceof String[]) {
         currentUser.setCustomAttributeArray(key, (String[]) value);
+      } else if (value instanceof List<?>) {
+        ArrayList<Object> valueArrayList = new ArrayList<Object>((Collection<Object>) value);
+        List<String> stringValueList = new ArrayList<>();
+        for (Object objectValue : valueArrayList) {
+          if (objectValue instanceof String) {
+            stringValueList.add((String) objectValue);
+          }
+        }
+        if (stringValueList.size() > 0) {
+          String[] arrayValue = new String[stringValueList.size()];
+          currentUser.setCustomAttributeArray(key, stringValueList.toArray(arrayValue));
+        }
       }
       else {
-        mLogger.info("Appboy can't map segment value for custom Appboy user "
+        mLogger.info("Braze can't map segment value for custom Braze user "
           + "attribute with key %s and value %s", key, value);
       }
     }
@@ -239,7 +253,7 @@ public class AppboyIntegration extends Integration<Appboy> {
     try {
       if (event.equals("Install Attributed")) {
         ValueMap campaignProps = (ValueMap) properties.get("campaign");
-        AppboyUser currentUser = mAppboy.getCurrentUser();
+        BrazeUser currentUser = mAppboy.getCurrentUser();
         if (campaignProps != null && currentUser != null) {
           currentUser.setAttributionData(new AttributionData(
               campaignProps.getString("source"),
@@ -255,7 +269,7 @@ public class AppboyIntegration extends Integration<Appboy> {
     }
     JSONObject propertiesJson = properties.toJsonObject();
     double revenue = properties.revenue();
-    if (revenue != 0 || event.equals("Order Completed")) {
+    if (revenue != 0 || event.equals("Order Completed") || event.equals("Completed Order")) {
       String currencyCode = StringUtils.isNullOrBlank(properties.currency()) ? DEFAULT_CURRENCY_CODE
         : properties.currency();
       propertiesJson.remove(REVENUE_KEY);
@@ -296,7 +310,7 @@ public class AppboyIntegration extends Integration<Appboy> {
   public void onActivityResumed(Activity activity) {
     super.onActivityResumed(activity);
     if (mAutomaticInAppMessageRegistrationEnabled) {
-      AppboyInAppMessageManager.getInstance().registerInAppMessageManager(activity);
+      BrazeInAppMessageManager.getInstance().registerInAppMessageManager(activity);
     }
   }
 
@@ -304,7 +318,7 @@ public class AppboyIntegration extends Integration<Appboy> {
   public void onActivityPaused(Activity activity) {
     super.onActivityPaused(activity);
     if (mAutomaticInAppMessageRegistrationEnabled) {
-      AppboyInAppMessageManager.getInstance().unregisterInAppMessageManager(activity);
+      BrazeInAppMessageManager.getInstance().unregisterInAppMessageManager(activity);
     }
   }
 

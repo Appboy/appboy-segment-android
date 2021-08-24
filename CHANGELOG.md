@@ -1,3 +1,9 @@
+## 10.0.0
+
+##### Breaking
+- Updated to [Braze Android SDK 15.0.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#1500).
+- A track call with event name "Completed Order" will now be treated as a purchase event for backwards compatibility with Segment eCommerce v1 API.
+
 ## 9.0.0
 
 ##### Breaking

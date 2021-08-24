@@ -6,19 +6,22 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.appboy.AppboyUser;
 import com.appboy.IAppboy;
 import com.appboy.IAppboyImageLoader;
 import com.appboy.events.BrazeNetworkFailureEvent;
-import com.appboy.events.ContentCardsUpdatedEvent;
+import com.appboy.events.BrazeSdkAuthenticationErrorEvent;
 import com.appboy.events.FeedUpdatedEvent;
 import com.appboy.events.IEventSubscriber;
 import com.appboy.events.IValueCallback;
-import com.appboy.events.InAppMessageEvent;
 import com.appboy.events.SessionStateChangedEvent;
-import com.appboy.models.IInAppMessage;
 import com.appboy.models.cards.Card;
 import com.appboy.models.outgoing.AppboyProperties;
+import com.braze.BrazeUser;
+import com.braze.events.ContentCardsUpdatedEvent;
+import com.braze.events.InAppMessageEvent;
+import com.braze.images.IBrazeImageLoader;
+import com.braze.models.inappmessage.IInAppMessage;
+import com.braze.models.outgoing.BrazeProperties;
 
 import org.json.JSONObject;
 
@@ -47,7 +50,17 @@ public class MockAppboy implements IAppboy {
   }
 
   @Override
+  public void logCustomEvent(String s, BrazeProperties  brazeProperties) {
+
+  }
+
+  @Override
   public void logPurchase(String s, String s1, BigDecimal bigDecimal) {
+
+  }
+
+  @Override
+  public void logPurchase(String s, String s1, BigDecimal bigDecimal, BrazeProperties brazeProperties) {
 
   }
 
@@ -58,6 +71,11 @@ public class MockAppboy implements IAppboy {
 
   @Override
   public void logPurchase(String s, String s1, BigDecimal bigDecimal, int i) {
+
+  }
+
+  @Override
+  public void logPurchase(String s, String s1, BigDecimal bigDecimal, int i, BrazeProperties brazeProperties) {
 
   }
 
@@ -142,6 +160,16 @@ public class MockAppboy implements IAppboy {
   }
 
   @Override
+  public void subscribeToSdkAuthenticationFailures(IEventSubscriber<BrazeSdkAuthenticationErrorEvent> iEventSubscriber) {
+
+  }
+
+  @Override
+  public <T> void addSingleSynchronousSubscription(IEventSubscriber<T> iEventSubscriber, Class<T> aClass) {
+
+  }
+
+  @Override
   public <T> void removeSingleSubscription(IEventSubscriber<T> iEventSubscriber, Class<T> aClass) {
 
   }
@@ -152,12 +180,17 @@ public class MockAppboy implements IAppboy {
   }
 
   @Override
-  public AppboyUser getCurrentUser() {
+  public void changeUser(String s, String s1) {
+
+  }
+
+  @Override
+  public BrazeUser getCurrentUser() {
     return null;
   }
 
   @Override
-  public void getCurrentUser(IValueCallback<AppboyUser> iValueCallback) {
+  public void getCurrentUser(IValueCallback<BrazeUser> iValueCallback) {
 
   }
 
@@ -167,7 +200,17 @@ public class MockAppboy implements IAppboy {
   }
 
   @Override
+  public void registerPushToken(String s) {
+
+  }
+
+  @Override
   public String getAppboyPushMessageRegistrationId() {
+    return null;
+  }
+
+  @Override
+  public String getRegisteredPushToken() {
     return null;
   }
 
@@ -182,7 +225,17 @@ public class MockAppboy implements IAppboy {
   }
 
   @Override
+  public IBrazeImageLoader getImageLoader() {
+    return null;
+  }
+
+  @Override
   public void setAppboyImageLoader(IAppboyImageLoader iAppboyImageLoader) {
+
+  }
+
+  @Override
+  public void setImageLoader(IBrazeImageLoader iBrazeImageLoader) {
 
   }
 
@@ -228,8 +281,19 @@ public class MockAppboy implements IAppboy {
   }
 
   @Override
+  public void requestLocationInitialization() {
+
+  }
+
+  @Override
   public void requestGeofences(double v, double v1) {
 
+  }
+
+  @NonNull
+  @Override
+  public String getDeviceId() {
+    return null;
   }
 
   @Override
@@ -239,6 +303,11 @@ public class MockAppboy implements IAppboy {
 
   @Override
   public void logFeedCardClick(String s) {
+
+  }
+
+  @Override
+  public void setSdkAuthenticationSignature(@NonNull String s) {
 
   }
 }

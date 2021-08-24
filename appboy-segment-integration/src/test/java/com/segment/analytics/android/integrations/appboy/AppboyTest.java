@@ -6,10 +6,10 @@ import android.content.Context;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.appboy.AppboyUser;
 import com.appboy.IAppboy;
 import com.appboy.enums.Gender;
 import com.appboy.models.outgoing.AppboyProperties;
+import com.braze.BrazeUser;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
@@ -27,11 +27,14 @@ import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.LooperMode;
 
+import java.util.ArrayList;
 import java.math.BigDecimal;
 
 import static com.segment.analytics.Utils.createTraits;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.AdditionalMatchers.*;
+import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -42,7 +45,7 @@ import static org.mockito.Mockito.when;
 @RunWith(RobolectricTestRunner.class)
 public class AppboyTest {
   private IAppboy mAppboy;
-  private AppboyUser mAppboyUser;
+  private BrazeUser mAppboyUser;
   private AppboyIntegration mIntegration;
   private Analytics mAnalytics;
 
@@ -53,7 +56,7 @@ public class AppboyTest {
     Mockito.when(mockApplication.getApplicationContext()).thenReturn(getContext());
     Mockito.when(mAnalytics.getApplication()).thenReturn(mockApplication);
     mAppboy = spy(new MockAppboy());
-    mAppboyUser = mock(AppboyUser.class);
+    mAppboyUser = mock(BrazeUser.class);
 
     when(mAppboy.getCurrentUser()).thenReturn(mAppboyUser);
     Logger logger = Logger.with(Analytics.LogLevel.DEBUG);
@@ -121,6 +124,8 @@ public class AppboyTest {
     traits.put("float", 5.0f);
     traits.put("long", 15L);
     traits.put("string", "value");
+    final String[] testStringArray = {"Test Value 1", "Test Value 2"};
+    traits.put("array", testStringArray);
     traits.put("unknown", new Object());
     traits.put("userId", "id1");
     traits.put("anonymousId", "id2");
@@ -139,10 +144,41 @@ public class AppboyTest {
     verify(mAppboyUser).setCustomUserAttribute("float", new Float(5.0));
     verify(mAppboyUser).setCustomUserAttribute("long", 15L);
     verify(mAppboyUser).setCustomUserAttribute("string", "value");
+    verify(mAppboyUser).setCustomAttributeArray("array", testStringArray);
     verify(mAppboyUser, Mockito.never()).setCustomUserAttribute("userId", "id1");
     verify(mAppboyUser, Mockito.never()).setCustomUserAttribute("anonymousId", "id2");
     verify(mAppboy, Mockito.times(1)).changeUser("userId");
     verify(mAppboy, Mockito.times(1)).getCurrentUser();
+  }
+
+  @Test
+  public void testIdentifyArrayList() {
+    Traits traits = createTraits("userId");
+    ArrayList<String> testArrayList = new ArrayList<>();
+    testArrayList.add("Test Value 1");
+    testArrayList.add("Test Value 2");
+    final String[] stringArray = {"Test Value 1", "Test Value 2"};
+    final String testName = "testArrayList";
+    traits.put(testName, testArrayList);
+    IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
+    mIntegration.identify(identifyPayload);
+    verify(mAppboyUser).setCustomAttributeArray(refEq(testName), aryEq(stringArray));
+  }
+
+  @Test
+  public void testIdentifyArrayListWithListInt() {
+    Traits traits = createTraits("userId");
+    ArrayList<Integer> testArrayList = new ArrayList<>();
+    testArrayList.add(1);
+    testArrayList.add(2);
+    final String[] stringArray = {"1", "2"};
+    final String[] emptyArray = {};
+    final String testName = "testArrayList";
+    traits.put(testName, testArrayList);
+    IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
+    mIntegration.identify(identifyPayload);
+    verify(mAppboyUser, Mockito.never()).setCustomAttributeArray(refEq(testName), aryEq(stringArray));
+    verify(mAppboyUser, Mockito.never()).setCustomAttributeArray(refEq(testName), aryEq(emptyArray));
   }
 
   @Test
@@ -217,6 +253,14 @@ public class AppboyTest {
   }
 
   @Test
+  public void testTrackLogsPurchaseForCompletedOrderEvent() {
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Completed Order", null);
+    mIntegration.track(trackPayload);
+    verify(mAppboy).logPurchase("Completed Order", "USD", new BigDecimal("0.0"));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
   public void testTrackLogsPurchaseForEventWithRevenue() {
     Properties purchaseProperties = new Properties();
     purchaseProperties.putRevenue(10.0);
@@ -231,6 +275,17 @@ public class AppboyTest {
     Properties purchaseProperties = new Properties();
     purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", purchaseProperties);
+    mIntegration.track(trackPayload);
+    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(AppboyProperties.class));
+    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(AppboyProperties.class));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void testTrackLogsPurchasesForCompletedOrderEventWithProducts() {
+    Properties purchaseProperties = new Properties();
+    purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Completed Order", purchaseProperties);
     mIntegration.track(trackPayload);
     verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(AppboyProperties.class));
     verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(AppboyProperties.class));
@@ -256,6 +311,16 @@ public class AppboyTest {
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", purchaseProperties);
     mIntegration.track(trackPayload);
     verify(mAppboy).logPurchase("Order Completed", "JPY", new BigDecimal("0.0"));
+    verifyNoMoreAppboyInteractions();
+  }
+
+  @Test
+  public void testTrackLogsPurchaseForCompletedOrderEventWithCustomCurrency() {
+    Properties purchaseProperties = new Properties();
+    purchaseProperties.putCurrency("JPY");
+    TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Completed Order", purchaseProperties);
+    mIntegration.track(trackPayload);
+    verify(mAppboy).logPurchase("Completed Order", "JPY", new BigDecimal("0.0"));
     verifyNoMoreAppboyInteractions();
   }
 
