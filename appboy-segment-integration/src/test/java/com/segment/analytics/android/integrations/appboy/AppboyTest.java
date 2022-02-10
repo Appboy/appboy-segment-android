@@ -8,7 +8,7 @@ import androidx.test.core.app.ApplicationProvider;
 
 import com.appboy.IAppboy;
 import com.appboy.enums.Gender;
-import com.appboy.models.outgoing.AppboyProperties;
+import com.braze.models.outgoing.BrazeProperties;
 import com.braze.BrazeUser;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
@@ -41,6 +41,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("deprecation")
 @LooperMode(LooperMode.Mode.LEGACY)
 @RunWith(RobolectricTestRunner.class)
 public class AppboyTest {
@@ -240,7 +241,7 @@ public class AppboyTest {
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("nonRevenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
     verify(mAppboy, Mockito.never()).logPurchase("c", "USD", new BigDecimal("10.0"));
-    verify(mAppboy).logCustomEvent(Mockito.eq("nonRevenueEvent"), Mockito.any(AppboyProperties.class));
+    verify(mAppboy).logCustomEvent(Mockito.eq("nonRevenueEvent"), Mockito.any(BrazeProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -276,8 +277,8 @@ public class AppboyTest {
     purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(AppboyProperties.class));
-    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(AppboyProperties.class));
+    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(BrazeProperties.class));
+    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(BrazeProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -287,8 +288,8 @@ public class AppboyTest {
     purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Completed Order", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(AppboyProperties.class));
-    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(AppboyProperties.class));
+    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(BrazeProperties.class));
+    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(BrazeProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -299,8 +300,8 @@ public class AppboyTest {
     purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("revenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(AppboyProperties.class));
-    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(AppboyProperties.class));
+    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(BrazeProperties.class));
+    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(BrazeProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 

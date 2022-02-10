@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.appboy.IAppboy;
-import com.appboy.IAppboyImageLoader;
 import com.appboy.events.BrazeNetworkFailureEvent;
 import com.appboy.events.BrazeSdkAuthenticationErrorEvent;
 import com.appboy.events.FeedUpdatedEvent;
@@ -15,7 +14,7 @@ import com.appboy.events.IEventSubscriber;
 import com.appboy.events.IValueCallback;
 import com.appboy.events.SessionStateChangedEvent;
 import com.appboy.models.cards.Card;
-import com.appboy.models.outgoing.AppboyProperties;
+import com.braze.models.outgoing.BrazeProperties;
 import com.braze.BrazeUser;
 import com.braze.events.ContentCardsUpdatedEvent;
 import com.braze.events.InAppMessageEvent;
@@ -45,11 +44,6 @@ public class MockAppboy implements IAppboy {
   }
 
   @Override
-  public void logCustomEvent(String s, AppboyProperties appboyProperties) {
-
-  }
-
-  @Override
   public void logCustomEvent(String s, BrazeProperties  brazeProperties) {
 
   }
@@ -65,22 +59,12 @@ public class MockAppboy implements IAppboy {
   }
 
   @Override
-  public void logPurchase(String s, String s1, BigDecimal bigDecimal, AppboyProperties appboyProperties) {
-
-  }
-
-  @Override
   public void logPurchase(String s, String s1, BigDecimal bigDecimal, int i) {
 
   }
 
   @Override
   public void logPurchase(String s, String s1, BigDecimal bigDecimal, int i, BrazeProperties brazeProperties) {
-
-  }
-
-  @Override
-  public void logPurchase(String s, String s1, BigDecimal bigDecimal, int i, AppboyProperties appboyProperties) {
 
   }
 
@@ -214,24 +198,15 @@ public class MockAppboy implements IAppboy {
     return null;
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public String getInstallTrackingId() {
     return null;
   }
 
   @Override
-  public IAppboyImageLoader getAppboyImageLoader() {
-    return null;
-  }
-
-  @Override
   public IBrazeImageLoader getImageLoader() {
     return null;
-  }
-
-  @Override
-  public void setAppboyImageLoader(IAppboyImageLoader iAppboyImageLoader) {
-
   }
 
   @Override
@@ -296,11 +271,13 @@ public class MockAppboy implements IAppboy {
     return null;
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public void logFeedCardImpression(String s) {
 
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public void logFeedCardClick(String s) {
 

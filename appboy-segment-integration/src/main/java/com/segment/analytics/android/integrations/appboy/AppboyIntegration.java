@@ -12,9 +12,11 @@ import com.appboy.IAppboy;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
 import com.appboy.enums.SdkFlavor;
-import com.appboy.models.outgoing.AppboyProperties;
+import com.braze.models.outgoing.BrazeProperties;
 import com.appboy.models.outgoing.AttributionData;
-import com.appboy.support.StringUtils;
+import com.braze.Braze;
+import com.braze.enums.BrazeSdkMetadata;
+import com.braze.support.StringUtils;
 import com.braze.BrazeUser;
 import com.braze.configuration.BrazeConfig;
 import com.braze.ui.inappmessage.BrazeInAppMessageManager;
@@ -35,6 +37,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -72,7 +75,8 @@ public class AppboyIntegration extends Integration<Appboy> {
       String customEndpoint = settings.getString(CUSTOM_ENDPOINT_KEY);
       BrazeConfig.Builder builder = new BrazeConfig.Builder()
           .setApiKey(apiKey)
-          .setSdkFlavor(flavor);
+          .setSdkFlavor(flavor)
+          .setSdkMetadata(EnumSet.of(BrazeSdkMetadata.SEGMENT));
       if (!StringUtils.isNullOrBlank(customEndpoint)) {
         builder.setCustomEndpoint(customEndpoint);
       }
@@ -289,7 +293,7 @@ public class AppboyIntegration extends Integration<Appboy> {
       } else {
         mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
           event, propertiesJson.toString());
-        mAppboy.logCustomEvent(event, new AppboyProperties(propertiesJson));
+        mAppboy.logCustomEvent(event, new BrazeProperties(propertiesJson));
       }
     }
   }
@@ -334,7 +338,7 @@ public class AppboyIntegration extends Integration<Appboy> {
     } else {
       mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
           + " %s.", productId, price, currencyCode, propertiesJson.toString());
-      mAppboy.logPurchase(productId, currencyCode, price, new AppboyProperties(propertiesJson));
+      mAppboy.logPurchase(productId, currencyCode, price, new BrazeProperties(propertiesJson));
     }
   }
 }

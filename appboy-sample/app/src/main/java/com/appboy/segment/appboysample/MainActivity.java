@@ -16,17 +16,17 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.appboy.Constants;
-import com.appboy.support.AppboyLogger;
 import com.appboy.ui.AppboyFeedFragment;
+import com.braze.support.BrazeLogger;
 
 public class MainActivity extends AppCompatActivity {
-  private static final String TAG = String.format("%s.%s", Constants.APPBOY_LOG_TAG_PREFIX, MainActivity.class.getName());
+  private static final String TAG = String.format("%s.%s", Constants.INSTANCE.getLOG_TAG_PREFIX(), MainActivity.class.getName());
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    AppboyLogger.setLogLevel(Log.VERBOSE);
+    BrazeLogger.setLogLevel(Log.VERBOSE);
     setContentView(R.layout.activity_main);
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);

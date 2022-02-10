@@ -15,12 +15,13 @@ allprojects {
 
 apply from: '../support/extra-gradle/appboy-release.gradle'
 apply from: '../support/extra-gradle/artifactory-release.gradle'
+apply from: '../appboy-segment-integration/gradle/break-compile-on-deprecations.gradle'
 
 buildscript {
   repositories {
-    jcenter()
     mavenCentral()
     google()
+    gradlePluginPortal()
   }
 
   dependencies {
@@ -61,7 +62,6 @@ checkstyle {
 
 dependencies {
   repositories {
-    jcenter()
     mavenCentral()
     maven { url "http://appboy.github.io/appboy-android-sdk/sdk" }
     google()
@@ -69,7 +69,7 @@ dependencies {
 
   compileOnly 'com.segment.analytics.android:analytics:4.3.1'
 
-  api 'com.appboy:android-sdk-ui:15.0.0'
+  api 'com.appboy:android-sdk-ui:18.0.1+'
 
   testImplementation 'junit:junit:4.12'
 

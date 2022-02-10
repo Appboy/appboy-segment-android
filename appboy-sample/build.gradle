@@ -3,8 +3,8 @@
 buildscript {
   repositories {
     mavenCentral()
-    jcenter()
     google()
+    gradlePluginPortal()
   }
   dependencies {
     classpath 'com.android.tools.build:gradle:4.0.1'
@@ -19,6 +19,7 @@ allprojects {
     mavenCentral()
     maven { url "http://appboy.github.io/appboy-android-sdk/sdk" }
     google()
+    gradlePluginPortal()
 
     // Uncomment the below if testing the remote artifact.
     // maven { url "http://appboy.github.io/appboy-segment-android/sdk" }

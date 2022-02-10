@@ -4,7 +4,8 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
 import com.appboy.Appboy;
-import com.appboy.configuration.AppboyConfig;
+import com.braze.Braze;
+import com.braze.configuration.BrazeConfig;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.integrations.IdentifyPayload;
 import com.segment.analytics.integrations.Logger;
@@ -21,8 +22,8 @@ public class AppboyAndroidTest {
 
   @BeforeClass
   public static void beforeClass() {
-    AppboyConfig appboyConfig = new AppboyConfig.Builder().setApiKey("testkey").build();
-    Appboy.configure(ApplicationProvider.getApplicationContext(), appboyConfig);
+    BrazeConfig brazeConfig = new BrazeConfig.Builder().setApiKey("testkey").build();
+    Braze.configure(ApplicationProvider.getApplicationContext(), brazeConfig);
   }
 
   @Test
