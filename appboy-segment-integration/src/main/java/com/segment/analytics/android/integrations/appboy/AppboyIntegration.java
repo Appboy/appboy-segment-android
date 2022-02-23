@@ -83,9 +83,9 @@ public class AppboyIntegration extends Integration<Appboy> {
 
       final Context applicationContext = analytics.getApplication().getApplicationContext();
       Appboy.configure(applicationContext, builder.build());
-      Appboy appboy = Appboy.getInstance(applicationContext);
+      Appboy.getInstance(applicationContext);
       logger.verbose("Configured Braze+Segment integration and initialized Appboy.");
-      return new AppboyIntegration(appboy, apiKey, logger, inAppMessageRegistrationEnabled);
+      return new AppboyIntegration(applicationContext, apiKey, logger, inAppMessageRegistrationEnabled);
     }
 
     @Override
@@ -94,16 +94,16 @@ public class AppboyIntegration extends Integration<Appboy> {
     }
   };
 
-  private final IAppboy mAppboy;
+  private final AppboyInstanceProvider mAppboy;
   private final String mToken;
   private final Logger mLogger;
   private final boolean mAutomaticInAppMessageRegistrationEnabled;
 
-  public AppboyIntegration(Appboy appboy,
+  public AppboyIntegration(Context context,
                            String token,
                            Logger logger,
                            boolean automaticInAppMessageRegistrationEnabled) {
-    mAppboy = appboy;
+    mAppboy = new FromContextAppboyInstanceProvider(context);
     mToken = token;
     mLogger = logger;
     mAutomaticInAppMessageRegistrationEnabled = automaticInAppMessageRegistrationEnabled;
@@ -114,7 +114,7 @@ public class AppboyIntegration extends Integration<Appboy> {
                            String token,
                            Logger logger,
                            boolean automaticInAppMessageRegistrationEnabled) {
-    mAppboy = appboy;
+    mAppboy = new DirectAppboyInstanceProvider(appboy);
     mToken = token;
     mLogger = logger;
     mAutomaticInAppMessageRegistrationEnabled = automaticInAppMessageRegistrationEnabled;
@@ -126,7 +126,7 @@ public class AppboyIntegration extends Integration<Appboy> {
 
   @Override
   public Appboy getUnderlyingInstance() {
-    return (Appboy) mAppboy;
+    return (Appboy) mAppboy.getInstance();
   }
 
   @Override
@@ -135,12 +135,12 @@ public class AppboyIntegration extends Integration<Appboy> {
 
     String userId = identify.userId();
     if (!StringUtils.isNullOrBlank(userId)) {
-      mAppboy.changeUser(identify.userId());
+      mAppboy.getInstance().changeUser(identify.userId());
     }
 
     Traits traits = identify.traits();
 
-    BrazeUser currentUser = mAppboy.getCurrentUser();
+    BrazeUser currentUser = mAppboy.getInstance().getCurrentUser();
     if (currentUser == null) {
       mLogger.info("Appboy.getCurrentUser() was null, aborting identify");
       return;
@@ -243,7 +243,7 @@ public class AppboyIntegration extends Integration<Appboy> {
   public void flush() {
     super.flush();
     mLogger.verbose("Calling appboy.requestImmediateDataFlush().");
-    mAppboy.requestImmediateDataFlush();
+    mAppboy.getInstance().requestImmediateDataFlush();
   }
 
   @Override
@@ -257,7 +257,7 @@ public class AppboyIntegration extends Integration<Appboy> {
     try {
       if (event.equals("Install Attributed")) {
         ValueMap campaignProps = (ValueMap) properties.get("campaign");
-        BrazeUser currentUser = mAppboy.getCurrentUser();
+        BrazeUser currentUser = mAppboy.getInstance().getCurrentUser();
         if (campaignProps != null && currentUser != null) {
           currentUser.setAttributionData(new AttributionData(
               campaignProps.getString("source"),
@@ -289,11 +289,11 @@ public class AppboyIntegration extends Integration<Appboy> {
     } else {
       if (propertiesJson == null || propertiesJson.length() == 0) {
         mLogger.verbose("Calling appboy.logCustomEvent for event %s", event);
-        mAppboy.logCustomEvent(event);
+        mAppboy.getInstance().logCustomEvent(event);
       } else {
         mLogger.verbose("Calling appboy.logCustomEvent for event %s with properties %s.",
           event, propertiesJson.toString());
-        mAppboy.logCustomEvent(event, new BrazeProperties(propertiesJson));
+        mAppboy.getInstance().logCustomEvent(event, new BrazeProperties(propertiesJson));
       }
     }
   }
@@ -301,13 +301,13 @@ public class AppboyIntegration extends Integration<Appboy> {
   @Override
   public void onActivityStarted(Activity activity) {
     super.onActivityStarted(activity);
-    mAppboy.openSession(activity);
+    mAppboy.getInstance().openSession(activity);
   }
 
   @Override
   public void onActivityStopped(Activity activity) {
     super.onActivityStopped(activity);
-    mAppboy.closeSession(activity);
+    mAppboy.getInstance().closeSession(activity);
   }
 
   @Override
@@ -334,11 +334,11 @@ public class AppboyIntegration extends Integration<Appboy> {
     if (propertiesJson == null || propertiesJson.length() == 0) {
       mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with no"
           + " properties.", productId, price, currencyCode);
-      mAppboy.logPurchase(productId, currencyCode, price);
+      mAppboy.getInstance().logPurchase(productId, currencyCode, price);
     } else {
       mLogger.verbose("Calling appboy.logPurchase for purchase %s for %.02f %s with properties"
           + " %s.", productId, price, currencyCode, propertiesJson.toString());
-      mAppboy.logPurchase(productId, currencyCode, price, new BrazeProperties(propertiesJson));
+      mAppboy.getInstance().logPurchase(productId, currencyCode, price, new BrazeProperties(propertiesJson));
     }
   }
 }
