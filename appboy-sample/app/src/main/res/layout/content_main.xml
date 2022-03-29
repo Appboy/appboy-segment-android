@@ -70,4 +70,18 @@
         android:layout_height="wrap_content"
         android:text="track"
         android:layout_below="@id/propertyValueField"/>
+
+    <Button
+        android:id="@+id/disableSdk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Disable SDK"
+        android:layout_below="@id/trackButton"/>
+
+    <Button
+        android:id="@+id/enableSdk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enable SDK"
+        android:layout_below="@id/disableSdk"/>
 </RelativeLayout>

@@ -1,3 +1,8 @@
+## 11.0.1
+
+##### Updated
+- Updated implementation to not use Braze instance directly - `wipeData` and `enableSdk` methods can now be called successfully.
+
 ## 11.0.0
 
 ##### Breaking

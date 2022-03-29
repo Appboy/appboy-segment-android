@@ -18,6 +18,7 @@ import com.segment.analytics.Traits;
 
 import java.util.Date;
 import java.util.Random;
+import com.braze.Braze;
 
 public class MainFragment extends Fragment {
 
@@ -131,6 +132,26 @@ public class MainFragment extends Fragment {
         Analytics.with(getContext()).track("nonRevenueEvent", new Properties().putProducts(products3));
       }
     });
+
+    Button disableSdkButton = view.findViewById(R.id.disableSdk);
+    disableSdkButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View arg0) {
+        Toast.makeText(getContext(), "disableSdk() called.", Toast.LENGTH_LONG).show();
+        Braze.disableSdk(getContext());
+        Braze.wipeData(getContext());
+      }
+    });
+
+    Button enableSdkButton = view.findViewById(R.id.enableSdk);
+    enableSdkButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View arg0) {
+        Toast.makeText(getContext(), "enableSdk() called.", Toast.LENGTH_LONG).show();
+        Braze.enableSdk(getContext());
+      }
+    });
+
     return view;
   }
 }
