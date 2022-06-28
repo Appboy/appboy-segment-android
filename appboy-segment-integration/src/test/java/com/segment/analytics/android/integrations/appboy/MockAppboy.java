@@ -7,12 +7,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.appboy.IAppboy;
-import com.appboy.events.BrazeNetworkFailureEvent;
-import com.appboy.events.BrazeSdkAuthenticationErrorEvent;
+import com.braze.events.BrazeNetworkFailureEvent;
+import com.braze.events.BrazeSdkAuthenticationErrorEvent;
 import com.appboy.events.FeedUpdatedEvent;
 import com.appboy.events.IEventSubscriber;
 import com.appboy.events.IValueCallback;
-import com.appboy.events.SessionStateChangedEvent;
+import com.braze.events.SessionStateChangedEvent;
 import com.appboy.models.cards.Card;
 import com.braze.models.outgoing.BrazeProperties;
 import com.braze.BrazeUser;
@@ -20,7 +20,6 @@ import com.braze.events.ContentCardsUpdatedEvent;
 import com.braze.events.InAppMessageEvent;
 import com.braze.images.IBrazeImageLoader;
 import com.braze.models.inappmessage.IInAppMessage;
-import com.braze.models.outgoing.BrazeProperties;
 
 import org.json.JSONObject;
 
@@ -85,11 +84,6 @@ public class MockAppboy implements IAppboy {
 
   @Override
   public void logPushStoryPageClicked(String s, String s1) {
-
-  }
-
-  @Override
-  public void logContentCardsDisplayed() {
 
   }
 
@@ -198,8 +192,8 @@ public class MockAppboy implements IAppboy {
     return null;
   }
 
-  @SuppressWarnings("deprecation")
   @Override
+  @SuppressWarnings("deprecation")
   public String getInstallTrackingId() {
     return null;
   }

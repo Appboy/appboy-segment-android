@@ -15,12 +15,12 @@ import android.view.MenuItem;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
-import com.appboy.Constants;
+import com.braze.Constants;
 import com.appboy.ui.AppboyFeedFragment;
 import com.braze.support.BrazeLogger;
 
 public class MainActivity extends AppCompatActivity {
-  private static final String TAG = String.format("%s.%s", Constants.INSTANCE.getLOG_TAG_PREFIX(), MainActivity.class.getName());
+  private static final String TAG = String.format("%s.%s", Constants.LOG_TAG_PREFIX, MainActivity.class.getName());
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
