@@ -7,14 +7,13 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 
-import com.appboy.Appboy;
-import com.appboy.IAppboy;
 import com.appboy.enums.Gender;
 import com.appboy.enums.Month;
 import com.appboy.enums.SdkFlavor;
-import com.braze.models.outgoing.BrazeProperties;
 import com.appboy.models.outgoing.AttributionData;
+import com.braze.models.outgoing.BrazeProperties;
 import com.braze.Braze;
+import com.braze.IBraze;
 import com.braze.enums.BrazeSdkMetadata;
 import com.braze.support.StringUtils;
 import com.braze.BrazeUser;
@@ -43,8 +42,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-public class AppboyIntegration extends Integration<Appboy> {
-  private static final String APPBOY_KEY = "Appboy";
+public class AppboyIntegration extends Integration<Braze> {
+  private static final String BRAZE_KEY = "Appboy";
   private static final Set<String> MALE_TOKENS = new HashSet<>(Arrays.asList("M",
       "MALE"));
   private static final Set<String> FEMALE_TOKENS = new HashSet<>(Arrays.asList("F",
@@ -62,7 +61,7 @@ public class AppboyIntegration extends Integration<Appboy> {
   public static final Factory FACTORY = new Factory() {
     @Override
     public Integration<?> create(ValueMap settings, Analytics analytics) {
-      Logger logger = analytics.logger(APPBOY_KEY);
+      Logger logger = analytics.logger(BRAZE_KEY);
       String apiKey = settings.getString(API_KEY_KEY);
       SdkFlavor flavor = SdkFlavor.SEGMENT;
       boolean inAppMessageRegistrationEnabled =
@@ -82,15 +81,15 @@ public class AppboyIntegration extends Integration<Appboy> {
       }
 
       final Context applicationContext = analytics.getApplication().getApplicationContext();
-      Appboy.configure(applicationContext, builder.build());
+      Braze.configure(applicationContext, builder.build());
       Braze.getInstance(applicationContext);
-      logger.verbose("Configured Braze+Segment integration and initialized Appboy.");
+      logger.verbose("Configured Braze+Segment integration and initialized Braze.");
       return new AppboyIntegration(applicationContext, apiKey, logger, inAppMessageRegistrationEnabled);
     }
 
     @Override
     public String key() {
-      return APPBOY_KEY;
+      return BRAZE_KEY;
     }
   };
 
@@ -99,7 +98,7 @@ public class AppboyIntegration extends Integration<Appboy> {
   private final boolean mAutomaticInAppMessageRegistrationEnabled;
   private final Context mContext;
   // Only used for testing
-  private final IAppboy mBraze;
+  private final IBraze mBraze;
 
   public AppboyIntegration(Context context,
                            String token,
@@ -113,12 +112,12 @@ public class AppboyIntegration extends Integration<Appboy> {
   }
 
   @RestrictTo(RestrictTo.Scope.TESTS)
-  public AppboyIntegration(IAppboy appboy,
+  public AppboyIntegration(IBraze braze,
                            String token,
                            Logger logger,
                            boolean automaticInAppMessageRegistrationEnabled) {
     mContext = null;
-    mBraze = appboy;
+    mBraze = braze;
     mToken = token;
     mLogger = logger;
     mAutomaticInAppMessageRegistrationEnabled = automaticInAppMessageRegistrationEnabled;
@@ -129,15 +128,15 @@ public class AppboyIntegration extends Integration<Appboy> {
   }
 
   @Override
-  public Appboy getUnderlyingInstance() {
+  public Braze getUnderlyingInstance() {
     if (mContext != null) {
-      return (Appboy) Braze.getInstance(mContext);
+      return (Braze) Braze.getInstance(mContext);
     } else {
-      return (Appboy) mBraze;
+      return (Braze) mBraze;
     }
   }
   
-  public IAppboy getInternalInstance() {
+  public IBraze getInternalInstance() {
     if (mContext != null) {
       return Braze.getInstance(mContext);
     } else {
@@ -158,7 +157,7 @@ public class AppboyIntegration extends Integration<Appboy> {
 
     BrazeUser currentUser = getInternalInstance().getCurrentUser();
     if (currentUser == null) {
-      mLogger.info("Appboy.getCurrentUser() was null, aborting identify");
+      mLogger.info("Braze.getCurrentUser() was null, aborting identify");
       return;
     }
 

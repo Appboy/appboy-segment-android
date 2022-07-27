@@ -1,3 +1,9 @@
+## 13.0.0
+
+##### Breaking
+- Updated to [Braze Android SDK 22.0.0](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#2200).
+- Updated to analytics-android 4.10.1.
+
 ## 12.0.0
 
 ##### Breaking

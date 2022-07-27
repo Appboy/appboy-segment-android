@@ -6,7 +6,7 @@ import android.content.Context;
 
 import androidx.test.core.app.ApplicationProvider;
 
-import com.appboy.IAppboy;
+import com.braze.IBraze;
 import com.appboy.enums.Gender;
 import com.braze.models.outgoing.BrazeProperties;
 import com.braze.BrazeUser;
@@ -44,9 +44,9 @@ import static org.mockito.Mockito.when;
 @SuppressWarnings("deprecation")
 @LooperMode(LooperMode.Mode.LEGACY)
 @RunWith(RobolectricTestRunner.class)
-public class AppboyTest {
-  private IAppboy mAppboy;
-  private BrazeUser mAppboyUser;
+public class BrazeTest {
+  private IBraze mBraze;
+  private BrazeUser mBrazeUser;
   private AppboyIntegration mIntegration;
   private Analytics mAnalytics;
 
@@ -56,13 +56,13 @@ public class AppboyTest {
     final Application mockApplication = mock(Application.class);
     Mockito.when(mockApplication.getApplicationContext()).thenReturn(getContext());
     Mockito.when(mAnalytics.getApplication()).thenReturn(mockApplication);
-    mAppboy = spy(new MockAppboy());
-    mAppboyUser = mock(BrazeUser.class);
+    mBraze = spy(new MockBraze());
+    mBrazeUser = mock(BrazeUser.class);
 
-    when(mAppboy.getCurrentUser()).thenReturn(mAppboyUser);
+    when(mBraze.getCurrentUser()).thenReturn(mBrazeUser);
     Logger logger = Logger.with(Analytics.LogLevel.DEBUG);
     when(mAnalytics.logger("Appboy")).thenReturn(logger);
-    mIntegration = new AppboyIntegration(mAppboy, "foo", logger, true);
+    mIntegration = new AppboyIntegration(mBraze, "foo", logger, true);
   }
 
   private Context getContext() {
@@ -81,7 +81,7 @@ public class AppboyTest {
   public void testActivityStartCallsOpenSession() {
     Activity activity = mock(Activity.class);
     mIntegration.onActivityStarted(activity);
-    verify(mAppboy).openSession(activity);
+    verify(mBraze).openSession(activity);
     verifyNoMoreAppboyInteractions();
   }
 
@@ -89,7 +89,7 @@ public class AppboyTest {
   public void testActivityStopCallsCloseSession() {
     Activity activity = mock(Activity.class);
     mIntegration.onActivityStopped(activity);
-    verify(mAppboy).closeSession(activity);
+    verify(mBraze).closeSession(activity);
     verifyNoMoreAppboyInteractions();
   }
 
@@ -104,7 +104,7 @@ public class AppboyTest {
     Traits traits = createTraits("userId");
     IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
-    verify(mAppboy, Mockito.times(1)).changeUser("userId");
+    verify(mBraze, Mockito.times(1)).changeUser("userId");
   }
 
   @Test
@@ -132,24 +132,24 @@ public class AppboyTest {
     traits.put("anonymousId", "id2");
     IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
-    verify(mAppboyUser).setEmail("a@o.o");
-    verify(mAppboyUser).setFirstName("first");
-    verify(mAppboyUser).setLastName("last");
-    verify(mAppboyUser).setGender(Gender.MALE);
-    verify(mAppboyUser).setPhoneNumber("5555551234");
-    verify(mAppboyUser).setHomeCity("city");
-    verify(mAppboyUser).setCountry("country");
-    verify(mAppboyUser).setCustomUserAttribute("int", 10);
-    verify(mAppboyUser).setCustomUserAttribute("bool", Boolean.TRUE);
-    verify(mAppboyUser).setCustomUserAttribute("double", 4.2);
-    verify(mAppboyUser).setCustomUserAttribute("float", new Float(5.0));
-    verify(mAppboyUser).setCustomUserAttribute("long", 15L);
-    verify(mAppboyUser).setCustomUserAttribute("string", "value");
-    verify(mAppboyUser).setCustomAttributeArray("array", testStringArray);
-    verify(mAppboyUser, Mockito.never()).setCustomUserAttribute("userId", "id1");
-    verify(mAppboyUser, Mockito.never()).setCustomUserAttribute("anonymousId", "id2");
-    verify(mAppboy, Mockito.times(1)).changeUser("userId");
-    verify(mAppboy, Mockito.times(1)).getCurrentUser();
+    verify(mBrazeUser).setEmail("a@o.o");
+    verify(mBrazeUser).setFirstName("first");
+    verify(mBrazeUser).setLastName("last");
+    verify(mBrazeUser).setGender(Gender.MALE);
+    verify(mBrazeUser).setPhoneNumber("5555551234");
+    verify(mBrazeUser).setHomeCity("city");
+    verify(mBrazeUser).setCountry("country");
+    verify(mBrazeUser).setCustomUserAttribute("int", 10);
+    verify(mBrazeUser).setCustomUserAttribute("bool", Boolean.TRUE);
+    verify(mBrazeUser).setCustomUserAttribute("double", 4.2);
+    verify(mBrazeUser).setCustomUserAttribute("float", new Float(5.0));
+    verify(mBrazeUser).setCustomUserAttribute("long", 15L);
+    verify(mBrazeUser).setCustomUserAttribute("string", "value");
+    verify(mBrazeUser).setCustomAttributeArray("array", testStringArray);
+    verify(mBrazeUser, Mockito.never()).setCustomUserAttribute("userId", "id1");
+    verify(mBrazeUser, Mockito.never()).setCustomUserAttribute("anonymousId", "id2");
+    verify(mBraze, Mockito.times(1)).changeUser("userId");
+    verify(mBraze, Mockito.times(1)).getCurrentUser();
   }
 
   @Test
@@ -163,7 +163,7 @@ public class AppboyTest {
     traits.put(testName, testArrayList);
     IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
-    verify(mAppboyUser).setCustomAttributeArray(refEq(testName), aryEq(stringArray));
+    verify(mBrazeUser).setCustomAttributeArray(refEq(testName), aryEq(stringArray));
   }
 
   @Test
@@ -178,8 +178,8 @@ public class AppboyTest {
     traits.put(testName, testArrayList);
     IdentifyPayload identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
-    verify(mAppboyUser, Mockito.never()).setCustomAttributeArray(refEq(testName), aryEq(stringArray));
-    verify(mAppboyUser, Mockito.never()).setCustomAttributeArray(refEq(testName), aryEq(emptyArray));
+    verify(mBrazeUser, Mockito.never()).setCustomAttributeArray(refEq(testName), aryEq(stringArray));
+    verify(mBrazeUser, Mockito.never()).setCustomAttributeArray(refEq(testName), aryEq(emptyArray));
   }
 
   @Test
@@ -194,7 +194,7 @@ public class AppboyTest {
     traits.putGender("m");
     identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
-    verify(mAppboyUser, Mockito.times(3)).setGender(Gender.MALE);
+    verify(mBrazeUser, Mockito.times(3)).setGender(Gender.MALE);
     traits.putGender("female");
     identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
@@ -204,10 +204,10 @@ public class AppboyTest {
     traits.putGender("f");
     identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
-    verify(mAppboy, Mockito.times(6)).changeUser("userId");
-    verify(mAppboyUser, Mockito.times(3)).setGender(Gender.FEMALE);
-    verify(mAppboyUser, Mockito.times(3)).setGender(Gender.MALE);
-    verify(mAppboy, Mockito.times(6)).getCurrentUser();
+    verify(mBraze, Mockito.times(6)).changeUser("userId");
+    verify(mBrazeUser, Mockito.times(3)).setGender(Gender.FEMALE);
+    verify(mBrazeUser, Mockito.times(3)).setGender(Gender.MALE);
+    verify(mBraze, Mockito.times(6)).getCurrentUser();
   }
 
   @Test
@@ -219,7 +219,7 @@ public class AppboyTest {
     traits.putGender("female_1");
     identifyPayload = getBasicIdentifyPayloadWithTraits(traits);
     mIntegration.identify(identifyPayload);
-    verify(mAppboy, Mockito.times(2)).changeUser("userId");
+    verify(mBraze, Mockito.times(2)).changeUser("userId");
   }
 
   @Test
@@ -230,7 +230,7 @@ public class AppboyTest {
     // Note, testing event and purchase properties doesn't currently work because the toJsonObject
     // uses an Android method that returns a default value.
     // TODO - update tests once we've got a workaround.
-    verify(mAppboy).logCustomEvent("myEvent");
+    verify(mBraze).logCustomEvent("myEvent");
     verifyNoMoreAppboyInteractions();
   }
 
@@ -240,8 +240,8 @@ public class AppboyTest {
     purchaseProperties.putProducts(new Properties.Product("foo", "bar", 10));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("nonRevenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy, Mockito.never()).logPurchase("c", "USD", new BigDecimal("10.0"));
-    verify(mAppboy).logCustomEvent(Mockito.eq("nonRevenueEvent"), Mockito.any(BrazeProperties.class));
+    verify(mBraze, Mockito.never()).logPurchase("c", "USD", new BigDecimal("10.0"));
+    verify(mBraze).logCustomEvent(Mockito.eq("nonRevenueEvent"), Mockito.any(BrazeProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -249,7 +249,7 @@ public class AppboyTest {
   public void testTrackLogsPurchaseForOrderCompletedEvent() {
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", null);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("Order Completed", "USD", new BigDecimal("0.0"));
+    verify(mBraze).logPurchase("Order Completed", "USD", new BigDecimal("0.0"));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -257,7 +257,7 @@ public class AppboyTest {
   public void testTrackLogsPurchaseForCompletedOrderEvent() {
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Completed Order", null);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("Completed Order", "USD", new BigDecimal("0.0"));
+    verify(mBraze).logPurchase("Completed Order", "USD", new BigDecimal("0.0"));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -267,7 +267,7 @@ public class AppboyTest {
     purchaseProperties.putRevenue(10.0);
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("revenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("revenueEvent", "USD", new BigDecimal("10.0"));
+    verify(mBraze).logPurchase("revenueEvent", "USD", new BigDecimal("10.0"));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -277,8 +277,8 @@ public class AppboyTest {
     purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(BrazeProperties.class));
-    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(BrazeProperties.class));
+    verify(mBraze).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(BrazeProperties.class));
+    verify(mBraze).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(BrazeProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -288,8 +288,8 @@ public class AppboyTest {
     purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Completed Order", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(BrazeProperties.class));
-    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(BrazeProperties.class));
+    verify(mBraze).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(BrazeProperties.class));
+    verify(mBraze).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(BrazeProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -300,8 +300,8 @@ public class AppboyTest {
     purchaseProperties.putProducts(new Properties.Product("id1", "sku1", 10), new Properties.Product("id2", "sku2", 12));
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("revenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(BrazeProperties.class));
-    verify(mAppboy).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(BrazeProperties.class));
+    verify(mBraze).logPurchase(Mockito.eq("id1"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("10.0")), Mockito.any(BrazeProperties.class));
+    verify(mBraze).logPurchase(Mockito.eq("id2"), Mockito.eq("USD"), Mockito.eq(new BigDecimal("12.0")), Mockito.any(BrazeProperties.class));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -311,7 +311,7 @@ public class AppboyTest {
     purchaseProperties.putCurrency("JPY");
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Order Completed", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("Order Completed", "JPY", new BigDecimal("0.0"));
+    verify(mBraze).logPurchase("Order Completed", "JPY", new BigDecimal("0.0"));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -321,7 +321,7 @@ public class AppboyTest {
     purchaseProperties.putCurrency("JPY");
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("Completed Order", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("Completed Order", "JPY", new BigDecimal("0.0"));
+    verify(mBraze).logPurchase("Completed Order", "JPY", new BigDecimal("0.0"));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -332,7 +332,7 @@ public class AppboyTest {
     purchaseProperties.putCurrency("JPY");
     TrackPayload trackPayload = getBasicTrackPayloadWithEventAndProps("revenueEvent", purchaseProperties);
     mIntegration.track(trackPayload);
-    verify(mAppboy).logPurchase("revenueEvent", "JPY", new BigDecimal("10.0"));
+    verify(mBraze).logPurchase("revenueEvent", "JPY", new BigDecimal("10.0"));
     verifyNoMoreAppboyInteractions();
   }
 
@@ -345,7 +345,7 @@ public class AppboyTest {
   @Test
   public void testFlushCallsRequestImmediateDataFlushOnce() {
     mIntegration.flush();
-    verify(mAppboy).requestImmediateDataFlush();
+    verify(mBraze).requestImmediateDataFlush();
     verifyNoMoreAppboyInteractions();
   }
 
@@ -361,7 +361,7 @@ public class AppboyTest {
     final String currencyCode = "USD";
     final BigDecimal price = new BigDecimal("1.00");
     mIntegration.logPurchaseForSingleItem(productId, currencyCode, price, null);
-    verify(mAppboy).logPurchase(productId, currencyCode, price);
+    verify(mBraze).logPurchase(productId, currencyCode, price);
     verifyNoMoreAppboyInteractions();
   }
 
@@ -371,12 +371,12 @@ public class AppboyTest {
     final String currencyCode = "USD";
     final BigDecimal price = new BigDecimal("1.00");
     mIntegration.logPurchaseForSingleItem(productId, currencyCode, price, new JSONObject());
-    verify(mAppboy).logPurchase(productId, currencyCode, price);
+    verify(mBraze).logPurchase(productId, currencyCode, price);
     verifyNoMoreAppboyInteractions();
   }
 
   private void verifyNoMoreAppboyInteractions() {
-    verifyNoMoreInteractions(mAppboy);
+    verifyNoMoreInteractions(mBraze);
   }
 
   private IdentifyPayload getBasicIdentifyPayloadWithTraits(Traits traits) {

@@ -6,12 +6,13 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.appboy.IAppboy;
+import com.braze.IBraze;
 import com.braze.events.BrazeNetworkFailureEvent;
+import com.braze.events.BrazePushEvent;
 import com.braze.events.BrazeSdkAuthenticationErrorEvent;
 import com.appboy.events.FeedUpdatedEvent;
-import com.appboy.events.IEventSubscriber;
-import com.appboy.events.IValueCallback;
+import com.braze.events.IEventSubscriber;
+import com.braze.events.IValueCallback;
 import com.braze.events.SessionStateChangedEvent;
 import com.appboy.models.cards.Card;
 import com.braze.models.outgoing.BrazeProperties;
@@ -26,7 +27,7 @@ import org.json.JSONObject;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class MockAppboy implements IAppboy {
+public class MockBraze implements IBraze {
   @Override
   public void openSession(Activity activity) {
 
@@ -173,21 +174,6 @@ public class MockAppboy implements IAppboy {
   }
 
   @Override
-  public void registerAppboyPushMessages(String s) {
-
-  }
-
-  @Override
-  public void registerPushToken(String s) {
-
-  }
-
-  @Override
-  public String getAppboyPushMessageRegistrationId() {
-    return null;
-  }
-
-  @Override
   public String getRegisteredPushToken() {
     return null;
   }
@@ -279,6 +265,16 @@ public class MockAppboy implements IAppboy {
 
   @Override
   public void setSdkAuthenticationSignature(@NonNull String s) {
+
+  }
+
+  @Override
+  public void setRegisteredPushToken(String s) {
+
+  }
+
+  @Override
+  public void subscribeToPushNotificationEvents(IEventSubscriber<BrazePushEvent> iEventSubscriber) {
 
   }
 }

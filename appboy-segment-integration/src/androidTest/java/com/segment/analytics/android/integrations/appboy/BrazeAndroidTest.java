@@ -3,7 +3,6 @@ package com.segment.analytics.android.integrations.appboy;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 
-import com.appboy.Appboy;
 import com.braze.Braze;
 import com.braze.configuration.BrazeConfig;
 import com.segment.analytics.Analytics;
@@ -18,7 +17,7 @@ import static com.segment.analytics.Utils.createTraits;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(AndroidJUnit4ClassRunner.class)
-public class AppboyAndroidTest {
+public class BrazeAndroidTest {
 
   @BeforeClass
   public static void beforeClass() {
@@ -34,9 +33,9 @@ public class AppboyAndroidTest {
       .userId(testUserId)
       .traits(createTraits(testUserId))
       .build();
-    AppboyIntegration integration = new AppboyIntegration(Appboy.getInstance(ApplicationProvider.getApplicationContext()), "token", Logger.with(Analytics.LogLevel.DEBUG), true);
+    AppboyIntegration integration = new AppboyIntegration(Braze.getInstance(ApplicationProvider.getApplicationContext()), "token", Logger.with(Analytics.LogLevel.DEBUG), true);
 
     integration.identify(identifyPayload);
-    assertEquals(testUserId, Appboy.getInstance(ApplicationProvider.getApplicationContext()).getCurrentUser().getUserId());
+    assertEquals(testUserId, Braze.getInstance(ApplicationProvider.getApplicationContext()).getCurrentUser().getUserId());
   }
 }
