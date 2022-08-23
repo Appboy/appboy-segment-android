@@ -1,3 +1,8 @@
+## 14.0.0
+
+##### Breaking
+- Updated to [Braze Android SDK 23.0.1](https://github.com/Appboy/appboy-android-sdk/blob/master/CHANGELOG.md#2301).
+
 ## 13.0.0
 
 ##### Breaking

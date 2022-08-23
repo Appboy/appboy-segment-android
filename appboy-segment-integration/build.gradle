@@ -69,7 +69,7 @@ dependencies {
 
   compileOnly 'com.segment.analytics.android:analytics:4.10.1'
 
-  api 'com.appboy:android-sdk-ui:22.0.0+'
+  api 'com.appboy:android-sdk-ui:23.0.1+'
 
   testImplementation 'junit:junit:4.12'
 
