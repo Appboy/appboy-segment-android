@@ -67,7 +67,7 @@ public class AppboyIntegration extends Integration<Braze> {
       boolean inAppMessageRegistrationEnabled =
               settings.getBoolean(AUTOMATIC_IN_APP_MESSAGE_REGISTRATION_ENABLED, true);
 
-      if (StringUtils.isNullOrBlank(API_KEY_KEY)) {
+      if (StringUtils.isNullOrBlank(apiKey)) {
         logger.info("Braze+Segment integration attempted to initialize without api key.");
         return null;
       }
