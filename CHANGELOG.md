@@ -1,3 +1,8 @@
+## 14.0.1
+
+##### Fixed
+- Fixes an issue where missing API key was not detected correctly. Thanks to @mpaduchh for finding the issue.
+
 ## 14.0.0
 
 ##### Breaking
