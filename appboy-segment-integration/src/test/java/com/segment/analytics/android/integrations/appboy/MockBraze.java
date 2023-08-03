@@ -10,11 +10,14 @@ import com.braze.IBraze;
 import com.braze.events.BrazeNetworkFailureEvent;
 import com.braze.events.BrazePushEvent;
 import com.braze.events.BrazeSdkAuthenticationErrorEvent;
-import com.appboy.events.FeedUpdatedEvent;
+import com.braze.events.FeatureFlagsUpdatedEvent;
+import com.braze.events.FeedUpdatedEvent;
 import com.braze.events.IEventSubscriber;
 import com.braze.events.IValueCallback;
+import com.braze.events.NoMatchingTriggerEvent;
 import com.braze.events.SessionStateChangedEvent;
-import com.appboy.models.cards.Card;
+import com.braze.models.FeatureFlag;
+import com.braze.models.cards.Card;
 import com.braze.models.outgoing.BrazeProperties;
 import com.braze.BrazeUser;
 import com.braze.events.ContentCardsUpdatedEvent;
@@ -94,6 +97,7 @@ public class MockBraze implements IBraze {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public void requestContentCardsRefresh(boolean b) {
 
   }
@@ -251,6 +255,9 @@ public class MockBraze implements IBraze {
     return null;
   }
 
+  @Override
+  public void getDeviceIdAsync(IValueCallback<String> iValueCallback) {}
+
   @SuppressWarnings("deprecation")
   @Override
   public void logFeedCardImpression(String s) {
@@ -275,6 +282,41 @@ public class MockBraze implements IBraze {
 
   @Override
   public void subscribeToPushNotificationEvents(IEventSubscriber<BrazePushEvent> iEventSubscriber) {
+
+  }
+
+  @Override
+  public List<FeatureFlag> getAllFeatureFlags() {
+    return null;
+  }
+
+  @Override
+  public FeatureFlag getFeatureFlag(String s) {
+    return null;
+  }
+
+  @Override
+  public void refreshFeatureFlags() {
+
+  }
+
+  @Override
+  public void requestContentCardsRefresh() {
+
+  }
+
+  @Override
+  public void requestContentCardsRefreshFromCache() {
+
+  }
+
+  @Override
+  public void subscribeToFeatureFlagsUpdates(IEventSubscriber<FeatureFlagsUpdatedEvent> iEventSubscriber) {
+
+  }
+
+  @Override
+  public void subscribeToNoMatchingTriggerForEvent(IEventSubscriber<NoMatchingTriggerEvent> iEventSubscriber) {
 
   }
 }

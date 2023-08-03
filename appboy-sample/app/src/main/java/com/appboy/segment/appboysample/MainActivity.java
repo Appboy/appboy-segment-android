@@ -16,7 +16,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import com.braze.Constants;
-import com.appboy.ui.AppboyFeedFragment;
+import com.braze.ui.BrazeFeedFragment;
 import com.braze.support.BrazeLogger;
 
 public class MainActivity extends AppCompatActivity {
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
     if (id == R.id.newsfeed) {
-      replaceCurrentFragment(new AppboyFeedFragment());
+      replaceCurrentFragment(new BrazeFeedFragment());
       return true;
     }
     return super.onOptionsItemSelected(item);

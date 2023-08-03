@@ -3,7 +3,7 @@ apply plugin: 'checkstyle'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.artifactory'
 
-// Grabs the first line of the changelog to get the current version. 
+// Grabs the first line of the changelog to get the current version.
 // Expects the line to start with Markdown syntax
 // (ex: ## major.minor.build)
 new File("../public/CHANGELOG.md").withReader { version = it.readLine().substring(3) }
@@ -67,9 +67,9 @@ dependencies {
     google()
   }
 
-  compileOnly 'com.segment.analytics.android:analytics:4.10.1'
+  compileOnly 'com.segment.analytics.android:analytics:4.10.4'
 
-  api 'com.appboy:android-sdk-ui:23.0.1+'
+  api 'com.braze:android-sdk-ui:26.3.0'
 
   testImplementation 'junit:junit:4.12'
 

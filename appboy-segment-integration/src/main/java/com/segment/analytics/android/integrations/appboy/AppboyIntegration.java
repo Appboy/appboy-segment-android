@@ -7,10 +7,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.VisibleForTesting;
 
-import com.appboy.enums.Gender;
-import com.appboy.enums.Month;
-import com.appboy.enums.SdkFlavor;
-import com.appboy.models.outgoing.AttributionData;
+import com.braze.enums.Gender;
+import com.braze.enums.Month;
+import com.braze.enums.SdkFlavor;
+import com.braze.models.outgoing.AttributionData;
 import com.braze.models.outgoing.BrazeProperties;
 import com.braze.Braze;
 import com.braze.IBraze;
@@ -135,7 +135,7 @@ public class AppboyIntegration extends Integration<Braze> {
       return (Braze) mBraze;
     }
   }
-  
+
   public IBraze getInternalInstance() {
     if (mContext != null) {
       return Braze.getInstance(mContext);

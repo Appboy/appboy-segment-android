@@ -7,7 +7,7 @@ import android.content.Context;
 import androidx.test.core.app.ApplicationProvider;
 
 import com.braze.IBraze;
-import com.appboy.enums.Gender;
+import com.braze.enums.Gender;
 import com.braze.models.outgoing.BrazeProperties;
 import com.braze.BrazeUser;
 import com.segment.analytics.Analytics;
@@ -354,7 +354,7 @@ public class BrazeTest {
     mIntegration.reset();
     verifyNoMoreAppboyInteractions();
   }
-  
+
   @Test
   public void whenPropertiesNull_logPurchaseForSingleItem_logsWithoutProperties() {
     final String productId = "id1";

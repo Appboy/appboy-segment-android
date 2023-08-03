@@ -13,6 +13,7 @@
         android:name=".AppboySegmentApplication">
         <activity
             android:name=".MainActivity"
+            android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar" >
             <intent-filter>
@@ -20,6 +21,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.appboy.ui.AppboyWebViewActivity" />
     </application>
 </manifest>

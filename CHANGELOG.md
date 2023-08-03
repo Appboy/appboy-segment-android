@@ -1,3 +1,11 @@
+## 15.0.0
+
+> Starting with this release, this SDK will use [Semantic Versioning](https://semver.org/).
+
+##### Breaking
+- Updated to [Braze Android SDK 26.3.0](https://github.com/braze-inc/braze-android-sdk/blob/master/CHANGELOG.md#2630).
+- Updated to analytics-android 4.10.4.
+
 ## 14.0.1
 
 ##### Fixed
