@@ -319,4 +319,9 @@ public class MockBraze implements IBraze {
   public void subscribeToNoMatchingTriggerForEvent(IEventSubscriber<NoMatchingTriggerEvent> iEventSubscriber) {
 
   }
+
+  @Override
+  public void logFeatureFlagImpression(String s) {
+
+  }
 }

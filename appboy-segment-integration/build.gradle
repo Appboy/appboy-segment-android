@@ -69,7 +69,7 @@ dependencies {
 
   compileOnly 'com.segment.analytics.android:analytics:4.10.4'
 
-  api 'com.braze:android-sdk-ui:26.3.0'
+  api 'com.braze:android-sdk-ui:26.3.2'
 
   testImplementation 'junit:junit:4.12'
 
